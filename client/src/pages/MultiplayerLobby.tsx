@@ -61,6 +61,13 @@ export default function MultiplayerLobby() {
   const me = players.find(p => p.id === myId);
   const won = me?.isCorrect ?? false;
 
+  // Get WebSocket URL from environment or default to localhost
+  const getWebSocketUrl = () => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    // Convert http:// to ws:// and https:// to wss://
+    return apiUrl.replace(/^http/, 'ws');
+  };
+
   // ------------------ WEBSOCKET ------------------
   useEffect(() => {
     if (!("WebSocket" in window)) {
@@ -68,7 +75,8 @@ export default function MultiplayerLobby() {
       return;
     }
 
-    const ws = new WebSocket("ws://localhost:8080");
+    const wsUrl = getWebSocketUrl();
+    const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
