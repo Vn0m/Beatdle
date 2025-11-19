@@ -166,7 +166,9 @@ wss.on("connection", (ws) => {
       // Reassign host if the host left
       if (lobby.players.length > 0 && !lobby.players.some(p => p.isHost)) {
           const newHost = lobby.players[0];
-          newHost.isHost = true;
+          if (newHost) {
+              newHost.isHost = true;
+          }
       }
       
       broadcastToLobby(currentLobbyId, {
