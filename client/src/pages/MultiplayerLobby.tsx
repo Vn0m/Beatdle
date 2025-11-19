@@ -255,7 +255,6 @@ export default function MultiplayerLobby() {
       const seconds = timeLeft % 60;
   
       // Get the correct snippet duration for the waveform based on the player's current attempt
-      const currentDuration = SNIPPET_DURATIONS[me.currentAttempt] || 0;
       const meAttempt = me.currentAttempt; // Alias for cleaner usage in waveform logic
 
       return (
@@ -392,11 +391,11 @@ export default function MultiplayerLobby() {
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </Link>
-        <div className="flex-grow text-center">
+        <div className="grow text-center">
           <div className="bg-gray-700 px-6 py-2 rounded text-xl font-bold">LOBBY: {lobbyId}</div>
         </div>
       </header>
-      <main className="flex flex-col items-center p-4 flex-grow">
+      <main className="flex flex-col items-center p-4 grow">
         {error && <div className="bg-red-800 border border-red-600 text-red-100 px-4 py-3 rounded-lg mb-6">{error}</div>}
         {gameStarted ? renderGame() : renderLobby()}
       </main>
