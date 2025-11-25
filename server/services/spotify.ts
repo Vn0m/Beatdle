@@ -92,7 +92,7 @@ async function getPreviewUrl(songName: string, artistName: string, apiPreviewUrl
 }
 
 // fetch track details from Spotify
-export async function getTrack(trackId: string) {
+export async function getTrack(trackId: string){
     const token = await getSpotifyAccessToken();
     
     if (!token) {
@@ -140,6 +140,55 @@ export async function getTrack(trackId: string) {
     }
 }
 
+// get track for daily song mode 
+export async function getDailyTrack(){
+    const token = await getSpotifyAccessToken();
+    if(!token) throw new Error("Unable to get Spotify access token");
+
+    // search API to get popular genre/year high-stream tracks
+    const searchTerms = ['pop', 'hits', 'top', 'billboard', 'viral'];
+    const today = new Date().toISOString().split('T')[0]!;
+    const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const searchTerm = searchTerms[seed % searchTerms.length];
+    
+    const url = `https://api.spotify.com/v1/search?q=${searchTerm}&type=track&market=US&limit=50`;
+
+    try{
+        const response = await fetch(url, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+        });
+        
+        if(!response.ok) {
+            const errorBody = await response.text();
+            console.error(`Spotify API error ${response.status}:`, errorBody);
+            throw new Error(`Spotify API error ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // filter high popularity tracks
+        const popularTracks = data.tracks.items
+        .filter((track: any) => track?.id && track?.popularity >= 80);
+
+        if (popularTracks.length == 0){
+            throw new Error("No popular songs found");
+        }
+
+        const today = new Date().toISOString().split('T')[0]!;
+        const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        const index = seed % popularTracks.length;
+        const dailyTrack = popularTracks[index];
+
+        return getTrack(dailyTrack.id)
+
+    }catch(err){
+        console.error("Error fetching playlist: ", err);
+        throw err;
+    }
+}
+
 // search tracks by query for autocomplete
 export async function searchTracks(query: string, limit: number = 5) {
     const token = await getSpotifyAccessToken();
@@ -170,7 +219,7 @@ export async function searchTracks(query: string, limit: number = 5) {
             artists: track.artists.map((artist: any) => artist.name),
             album: {
                 name: track.album.name,
-                image: track.album.images[2]?.url || track.album.images[0]?.url || null, // Use smallest image for autocomplete
+                image: track.album.images[2]?.url || track.album.images[0]?.url || null, // smallest image for autocomplete
             },
             previewUrl: track.preview_url, 
         }));
@@ -182,35 +231,32 @@ export async function searchTracks(query: string, limit: number = 5) {
     }
 }
 
-// ----- RECENT TRACK CACHE -----
-const MAX_RECENT_TRACKS = 50;
+const MAX_RECENT_TRACKS = 20;
 const recentTrackIds = new Set<string>();
 
 function addRecentTrack(trackId: string) {
-  // Remove if already present to refresh its position
-  if (recentTrackIds.has(trackId)) recentTrackIds.delete(trackId);
+    // Remove if already present to refresh its position next
+    if (recentTrackIds.has(trackId)) recentTrackIds.delete(trackId);    
+    recentTrackIds.add(trackId);
 
-  // Add as most recent
-  recentTrackIds.add(trackId);
-
-  // Remove oldest if exceeding max
-  while (recentTrackIds.size > MAX_RECENT_TRACKS) {
-    const oldest = recentTrackIds.values().next().value;
-    recentTrackIds.delete(oldest || "");
-  }
+    // Remove oldest if exceeding max
+    while (recentTrackIds.size > MAX_RECENT_TRACKS) {
+        const oldest = recentTrackIds.values().next().value;
+        recentTrackIds.delete(oldest || "");
+    }
 }
 
-// ----- RANDOM TRACK FUNCTION -----
-export async function getRandomTrack(exclude: string[] = []) { // Added exclude parameter
+export async function getRandomTrack(exclude: string[] = []) { 
   const token = await getSpotifyAccessToken();
   if (!token) throw new Error("Unable to get Spotify access token");
 
-  // Spotify popular playlist
-  const POPULAR_PLAYLIST_ID = "37i9dQZEVXbLp5XoPON0wI";
-  const url = `https://api.spotify.com/v1/playlists/${POPULAR_PLAYLIST_ID}/tracks?market=US&limit=100`;
+  // Use search API with random terms for variety
+  const searchTerms = ['pop', 'rock', 'hip hop', 'dance', 'electronic', 'indie', 'hits', 'chart'];
+  const randomTerm = searchTerms[Math.floor(Math.random() * searchTerms.length)]!;
+  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(randomTerm)}&type=track&market=US&limit=50`;
 
   try {
-    const response = await fetch(url, {
+      const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) throw new Error(`Spotify API error ${response.status}`);
@@ -219,10 +265,9 @@ export async function getRandomTrack(exclude: string[] = []) { // Added exclude 
     // Combine recent tracks cache and explicit exclusion list
     const excludedIds = new Set([...recentTrackIds, ...exclude]);
 
-    // Filter valid tracks and remove recently played/excluded
-    const validTracks = data.items
-      .map((item: any) => item.track)
-      .filter((track: any) => track?.id && !excludedIds.has(track.id));
+    // Filter valid tracks (popularity 70+) and remove recently played/excluded
+    const validTracks = data.tracks.items
+      .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 70);
 
     if (validTracks.length === 0) {
       console.warn("All tracks recently played/excluded, clearing cache...");

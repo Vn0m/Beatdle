@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
-import { getTrack, searchTracks, getRandomTrack } from '../services/spotify.js';
+import { getTrack, getDailyTrack, searchTracks, getRandomTrack } from '../services/spotify.js';
 import userRoutes from './routes/users.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 
@@ -80,8 +80,7 @@ app.get('/api/spotify/search', async (req, res) => {
 
 app.get('/api/spotify/daily-song', async (req, res) => {
   try {
-    const dailyTrackId = '2qSkIjg1o9h3YT9RAgYN75';
-    const track = await getTrack(dailyTrackId);
+    const track = await getDailyTrack();
     res.json(track);
   } catch (error) {
     console.error('Error fetching daily song:', error);

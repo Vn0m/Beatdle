@@ -1,10 +1,8 @@
 # Beatdle
 
-CodePath WEB103 Final Project
-
 Designed and developed by: Thomas Huang, Juan Apolo, and Nanzib Chowdhury
 
-🔗 Link to deployed app: 
+Deployed app: https://beatdle-app.onrender.com/
 
 ## About
 
