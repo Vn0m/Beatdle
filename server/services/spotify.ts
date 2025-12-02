@@ -168,16 +168,28 @@ export async function getDailyTrack(){
         
         const data = await response.json();
         
-        // filter high popularity tracks
-        const popularTracks = data.tracks.items
-        .filter((track: any) => track?.id && track?.popularity >= 80);
-
-        if (popularTracks.length == 0){
-            throw new Error("No popular songs found");
+        // Ensure we have tracks
+        if (!data.tracks?.items || data.tracks.items.length === 0) {
+            throw new Error("No tracks returned from search");
+        }
+        
+        // Try popularity 80+, then 60+, then any valid track
+        let popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 80);
+        
+        if (popularTracks.length === 0) {
+            console.warn("No 80+ popularity tracks, trying 60+");
+            popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 70);
+        }
+        
+        if (popularTracks.length === 0) {
+            console.warn("No 60+ popularity tracks, using any valid track");
+            popularTracks = data.tracks.items.filter((track: any) => track?.id);
         }
 
-        const today = new Date().toISOString().split('T')[0]!;
-        const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        if (popularTracks.length === 0){
+            throw new Error("No valid tracks found");
+        }
+
         const index = seed % popularTracks.length;
         const dailyTrack = popularTracks[index];
 
