@@ -1,19 +1,10 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import Autocomplete from "../components/Autocomplete";
-import type { SpotifyTrack } from "../components/types";
-import { handleGuess } from "../components/handleGuess";
-import type { TrackSuggestion } from "../api/spotify";
+import type { SpotifyTrack, Player, TrackSuggestion } from "../types";
+import { MAX_ATTEMPTS, MAX_ROUNDS, SNIPPET_DURATIONS } from "../constants";
 
-interface Player {
-  id: string;
-  name: string;
-  isHost: boolean;
-  score: number;
-  currentAttempt: number;
-  isCorrect: boolean;
-  guesses: string[];
-}
+const ROUND_TIME_SECONDS = 90;
 
 type LobbyMessage =
   | { type: "joinedLobby"; payload: { yourId: string; players: Player[] } }
@@ -22,11 +13,6 @@ type LobbyMessage =
   | { type: "roundOver"; payload: { players: Player[] } }
   | { type: "gameOver"; payload: { winners: Player[]; players: Player[] } }
   | { type: "error"; payload: { message: string } };
-
-const MAX_ATTEMPTS = 5;
-const MAX_ROUNDS = 5;
-const SNIPPET_DURATIONS = [3, 6, 9, 12, 15];
-const ROUND_TIME_SECONDS = 90;
 
 function isLobbyMessage(data: unknown): data is LobbyMessage {
   if (!data || typeof data !== "object") return false;
@@ -185,14 +171,7 @@ export default function MultiplayerLobby() {
   function onGuess(selected: TrackSuggestion) {
     if (!me || !track || roundOver) return;
 
-    // Use handleGuess only to determine correctness, but do not update local state
-    const correct = handleGuess(
-      selected.name,
-      track,
-      me.guesses,
-      () => {}, // Do not update state locally in multiplayer
-      () => {}  // Do not set roundOver locally in multiplayer
-    );
+    const correct = selected.id === track.id;
 
     wsRef.current?.send(JSON.stringify({ type: "playerGuess", payload: { lobbyId, playerId: myId, correct } }));
   }

@@ -1,4 +1,3 @@
-// client/src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home.tsx';
 import Daily from './pages/Daily.tsx';
@@ -8,6 +7,7 @@ import JoinLobby from './pages/JoinLobby.tsx';
 import MultiplayerLobby from './pages/MultiplayerLobby.tsx';
 import Profile from './pages/Profile.tsx';
 import Leaderboard from './pages/Leaderboard.tsx';
+
 function App() {
   return (
     <Router>

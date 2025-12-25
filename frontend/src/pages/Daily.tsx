@@ -1,13 +1,9 @@
-// client/src/pages/Daily.tsx
-
 import { useEffect, useState, useRef } from "react";
 import { fetchDailySong, type TrackSuggestion } from "../api/spotify";
-import type { SpotifyTrack } from "../api/spotify";
+import type { SpotifyTrack } from "../types";
 import Autocomplete from "../components/Autocomplete";
 import { useNavigate } from "react-router-dom";
-
-const MAX_ATTEMPTS = 5;
-const SNIPPET_DURATIONS = [3, 6, 9, 12, 15]; 
+import { MAX_ATTEMPTS, SNIPPET_DURATIONS } from "../constants"; 
 
 export default function Daily() {
   const navigate = useNavigate();
