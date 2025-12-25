@@ -1,8 +1,6 @@
-// cache for the access token and its expiry time
 let cachedToken: string | null = null;
 let tokenExpiryTime: number = 0;
 
-// import require for CommonJS module
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
@@ -14,9 +12,7 @@ try {
     console.error('Failed to load spotify-preview-finder:', error);
 }
 
-// request an access token from Spotify with client credentials flow
 export async function getSpotifyAccessToken(): Promise<string | null> {
-    // return cached token if it's still valid
     if (cachedToken && Date.now() < tokenExpiryTime) {
         return cachedToken;
     }
@@ -59,7 +55,6 @@ export async function getSpotifyAccessToken(): Promise<string | null> {
     }
 }
 
-// helper to get preview URL using the preview finder as fallback
 async function getPreviewUrl(songName: string, artistName: string, apiPreviewUrl: string | null): Promise<string | null> {
     if (apiPreviewUrl) {
         return apiPreviewUrl;
@@ -91,7 +86,6 @@ async function getPreviewUrl(songName: string, artistName: string, apiPreviewUrl
     }
 }
 
-// fetch track details from Spotify
 export async function getTrack(trackId: string){
     const token = await getSpotifyAccessToken();
     
@@ -117,7 +111,6 @@ export async function getTrack(trackId: string){
 
         const data = await response.json();
         
-        // Use preview finder as fallback if API doesn't provide a preview URL
         const songName = data.name;
         const artistName = data.artists[0]?.name || '';
         const previewUrl = await getPreviewUrl(songName, artistName, data.preview_url);
@@ -140,12 +133,10 @@ export async function getTrack(trackId: string){
     }
 }
 
-// get track for daily song mode 
 export async function getDailyTrack(){
     const token = await getSpotifyAccessToken();
     if(!token) throw new Error("Unable to get Spotify access token");
 
-    // search API to get popular genre/year high-stream tracks
     const searchTerms = ['pop', 'hits', 'top', 'billboard', 'viral'];
     const today = new Date().toISOString().split('T')[0]!;
     const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -168,12 +159,10 @@ export async function getDailyTrack(){
         
         const data = await response.json();
         
-        // Ensure we have tracks
         if (!data.tracks?.items || data.tracks.items.length === 0) {
             throw new Error("No tracks returned from search");
         }
         
-        // Try popularity 80+, then 60+, then any valid track
         let popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 80);
         
         if (popularTracks.length === 0) {
@@ -201,7 +190,6 @@ export async function getDailyTrack(){
     }
 }
 
-// search tracks by query for autocomplete
 export async function searchTracks(query: string, limit: number = 5) {
     const token = await getSpotifyAccessToken();
     if (!token) {
@@ -247,11 +235,9 @@ const MAX_RECENT_TRACKS = 20;
 const recentTrackIds = new Set<string>();
 
 function addRecentTrack(trackId: string) {
-    // Remove if already present to refresh its position next
     if (recentTrackIds.has(trackId)) recentTrackIds.delete(trackId);    
     recentTrackIds.add(trackId);
 
-    // Remove oldest if exceeding max
     while (recentTrackIds.size > MAX_RECENT_TRACKS) {
         const oldest = recentTrackIds.values().next().value;
         recentTrackIds.delete(oldest || "");
@@ -262,7 +248,6 @@ export async function getRandomTrack(exclude: string[] = []) {
   const token = await getSpotifyAccessToken();
   if (!token) throw new Error("Unable to get Spotify access token");
 
-  // Use search API with random terms for variety
   const searchTerms = ['pop', 'rock', 'hip hop', 'dance', 'electronic', 'indie', 'hits', 'chart'];
   const randomTerm = searchTerms[Math.floor(Math.random() * searchTerms.length)]!;
   const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(randomTerm)}&type=track&market=US&limit=50`;
@@ -274,27 +259,21 @@ export async function getRandomTrack(exclude: string[] = []) {
     if (!response.ok) throw new Error(`Spotify API error ${response.status}`);
     const data = await response.json();
 
-    // Combine recent tracks cache and explicit exclusion list
     const excludedIds = new Set([...recentTrackIds, ...exclude]);
 
-    // Filter valid tracks (popularity 70+) and remove recently played/excluded
     const validTracks = data.tracks.items
       .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 70);
 
     if (validTracks.length === 0) {
       console.warn("All tracks recently played/excluded, clearing cache...");
       recentTrackIds.clear();
-      // Only return a fallback, do not recursively call getRandomTrack without fixing the source list
       return getRandomTrack_Fallback();
     }
 
-    // Pick a random track
     const randomTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
 
-    // Add to recent cache (used only for daily/single-player mode, harmless here)
     addRecentTrack(randomTrack.id);
 
-    // Return full track info
     return getTrack(randomTrack.id);
   } catch (err) {
     console.warn("Failed to get random track from playlist, falling back:", err);
@@ -307,7 +286,6 @@ async function getRandomTrack_Fallback() {
     const token = await getSpotifyAccessToken();
     if (!token) throw new Error("Unable to get Spotify access token");
   
-    // Simple fallback: search for a random letter
     const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
     const url = `https://api.spotify.com/v1/search?q=${randomChar}&type=track&limit=1&market=US`;
   

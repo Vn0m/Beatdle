@@ -1,5 +1,19 @@
-declare module 'spotify-preview-finder' {declare module 'spotify-preview-finder' {
-    export function getPreview(trackId: string): Promise<string | null>;
-    export function getPreview(trackId: string): Promise<string | null>;
-}}
+declare module 'spotify-preview-finder' {
+  interface PreviewResult {
+    success: boolean;
+    results: Array<{
+      trackName: string;
+      artistName: string;
+      previewUrls: string[];
+    }>;
+  }
+
+  function spotifyPreviewFinder(
+    songName: string,
+    artistName?: string,
+    limit?: number
+  ): Promise<PreviewResult>;
+
+  export = spotifyPreviewFinder;
+}
 

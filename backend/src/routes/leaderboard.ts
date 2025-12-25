@@ -1,16 +1,8 @@
-// server/src/routes/leaderboard.ts
-
 import express from 'express';
-// We can reuse the same db connection!
 import { query } from '../db.js';
 
 const router = express.Router();
 
-/**
- * @route   GET /api/leaderboard
- * @desc    Fetches top 10 users, sorted by max_streak
- * @access  Public
- */
 router.get('/', async (req, res) => {
   try {
     const result = await query(
