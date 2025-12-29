@@ -11,10 +11,10 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="flex justify-between items-center p-4 bg-gray-800">
+      <header className="flex justify-between items-center p-4 bg-zinc-900 border-b border-zinc-800">
         {/* Profile Link */}
         <Link to="/profile/1" title="View Profile">
-          <FaUserCircle size={40} className="text-gray-400 hover:text-white transition-colors" />
+          <FaUserCircle size={40} className="text-gray-400 hover:text-emerald-400 transition-colors" />
         </Link>
         
         {/* Hamburger Button to open the menu */}
