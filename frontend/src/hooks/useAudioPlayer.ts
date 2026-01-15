@@ -9,19 +9,45 @@ interface UseAudioPlayerOptions {
 export function useAudioPlayer({ previewUrl, duration, onEnded }: UseAudioPlayerOptions) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
   const timeoutRef = useRef<number | null>(null);
+  const intervalRef = useRef<number | null>(null);
 
-  // Clean up on unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+      }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
       if (audioRef.current) {
         audioRef.current.pause();
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (isPlaying && audioRef.current) {
+      intervalRef.current = setInterval(() => {
+        if (audioRef.current) {
+          setCurrentTime(audioRef.current.currentTime);
+        }
+      }, 50) as unknown as number;
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      setCurrentTime(0);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [isPlaying]);
 
   const play = () => {
     if (!audioRef.current || !previewUrl) return;
@@ -31,7 +57,6 @@ export function useAudioPlayer({ previewUrl, duration, onEnded }: UseAudioPlayer
     audio.play();
     setIsPlaying(true);
 
-    // Auto-pause after duration
     timeoutRef.current = setTimeout(() => {
       audio.pause();
       setIsPlaying(false);
@@ -62,6 +87,7 @@ export function useAudioPlayer({ previewUrl, duration, onEnded }: UseAudioPlayer
   return {
     audioRef,
     isPlaying,
+    currentTime,
     play,
     pause,
     playFullSong,

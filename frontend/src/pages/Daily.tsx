@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
+import AppHeader from "../components/AppHeader";
 import { fetchDailySong, type TrackSuggestion } from "../api/spotify";
 import type { SpotifyTrack } from "../types";
 import Autocomplete from "../components/Autocomplete";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useNavigate } from "react-router-dom";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { MAX_ATTEMPTS, SNIPPET_DURATIONS } from "../constants";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
 
 export default function Daily() {
-  const navigate = useNavigate();
   
   const [track, setTrack] = useState<SpotifyTrack | null>(null);
   const [currentAttempt, setCurrentAttempt] = useState(0);
@@ -20,8 +19,8 @@ export default function Daily() {
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
 
-  const duration = SNIPPET_DURATIONS[currentAttempt] || 15;
-  const { audioRef, isPlaying, play, playFullSong } = useAudioPlayer({
+  const duration = gameOver ? 15 : (SNIPPET_DURATIONS[currentAttempt] || 15);
+  const { audioRef, isPlaying, currentTime, play, pause, playFullSong } = useAudioPlayer({
     previewUrl: track?.previewUrl || null,
     duration,
   });
@@ -63,11 +62,9 @@ export default function Daily() {
     }
   };
 
-  // NEW: Function to generate the emoji grid for sharing
   const generateShareGrid = () => {
     if (!track) return "";
     
-    // Create the Heardle-style 1-line grid
     let grid = "";
     for (let i = 0; i < MAX_ATTEMPTS; i++) {
       const guess = guesses[i];
@@ -80,21 +77,17 @@ export default function Daily() {
       }
     }
 
-    // Get a unique-ish ID for the day (last 5 chars of track ID)
     const dailyId = track.id.slice(-5);
     const tries = won ? guesses.length : "X";
     
     return `Beatdle #${dailyId} ${tries}/${MAX_ATTEMPTS}\n\n${grid}`;
   };
 
-  // NEW: Function to copy the results to the clipboard
   const handleShare = async () => {
     const gridText = generateShareGrid();
     try {
-      // Use the modern Clipboard API
       await navigator.clipboard.writeText(gridText);
       setCopied(true);
-      // Reset the "Copied!" message after 2 seconds
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error("Failed to copy results: ", err);
@@ -104,151 +97,160 @@ export default function Daily() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black text-white">
-        <div className="text-2xl">Loading today's song...</div>
+      <div className="flex items-center justify-center min-h-screen bg-white text-dark font-sans">
+        <div className="text-xl font-medium">Loading today's song...</div>
       </div>
     );
   }
 
   if (!track) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black text-white">
-        <div className="text-2xl">Failed to load song. Please try again.</div>
+      <div className="flex items-center justify-center min-h-screen bg-white text-dark font-sans">
+        <div className="text-xl font-medium">Failed to load song. Please try again.</div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center min-h-screen bg-black text-white p-6">
-      {/* Header */}
-      <div className="w-full max-w-2xl flex justify-between items-center mb-8">
-        <h1 className="text-4xl font-bold text-emerald-400">🎵 Daily Challenge</h1>
-        <Button onClick={() => navigate("/")} className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700">
-          Back
-        </Button>
-      </div>
-
-      {/* Hidden audio element */}
-      {track.previewUrl && (
-        <audio ref={audioRef} src={track.previewUrl} />
-      )}
-
-      {/* Play Button */}
-      <button
-        onClick={play}
-        disabled={isPlaying || gameOver}
-        className={`w-24 h-24 rounded-full flex items-center justify-center text-4xl mb-6 transition ${
-          isPlaying
-            ? "bg-zinc-800 cursor-not-allowed"
-            : gameOver && won
-            ? "bg-zinc-800" 
-            : gameOver && !won
-            ? "bg-zinc-800 cursor-not-allowed"
-            : "bg-zinc-800 hover:bg-zinc-700"
-        }`}
-      >
-        {isPlaying ? "⏸" : "▶️"}
-      </button>
-
-      {/* Waveform visualization */}
-      <div className="flex gap-1 mb-8 h-16 items-end">
-        {[...Array(30)].map((_, i) => {
-          // Adjust logic to correctly show the *current* snippet length, not the next one
-          const currentDuration = SNIPPET_DURATIONS[currentAttempt] || 0;
-          const isUnlocked = i < (currentDuration / 15) * 30; // 15s is max, 30 bars
-          return (
-            <div
-              key={i}
-              className={`w-2 rounded-t ${
-                isUnlocked ? "bg-emerald-500" : "bg-zinc-800"
-              }`}
-              style={{
-                height: `${20 + Math.random() * 80}%`,
-              }}
-            />
-          );
-        })}
-      </div>
-
-      {/* Search/Autocomplete */}
-      {!gameOver && (
-        <div className="w-full max-w-md mb-8">
-          <Autocomplete onSelect={handleGuess} disabled={gameOver} />
-          <p className="text-sm text-gray-400 mt-2 text-center">
-            Attempt {currentAttempt + 1} of {MAX_ATTEMPTS} • {SNIPPET_DURATIONS[currentAttempt]}s unlocked
-          </p>
-        </div>
-      )}
-
-      {/* View Results Button */}
-      {gameOver && (
-        <Button 
-          onClick={() => setShowModal(true)} 
-          className="mb-6 bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700"
-        >
-          View Results
-        </Button>
-      )}
-
-      {/* Guess History */}
-      <div className="w-full max-w-2xl mb-8">
-        <h3 className="text-lg font-semibold mb-3 text-gray-300">Your Guesses</h3>
-        <div className="space-y-2">
-          {guesses.map((guess, i) => (
-            <div
-              key={i}
-              className={`p-3 rounded-lg border-2 flex items-center justify-between ${
-                guess.correct
-                  ? "bg-emerald-600/20 border-emerald-500"
-                  : "bg-red-600/20 border-red-500"
-              }`}
-            >
-              <span className="text-sm">{guess.guess}</span>
-              <span className="text-xl">{guess.correct ? "✅" : "❌"}</span>
-            </div>
-          ))}
-          {/* Show remaining attempts */}
-          {[...Array(MAX_ATTEMPTS - guesses.length)].map((_, i) => (
-            <div
-              key={`remaining-${i}`}
-              className="p-3 rounded-lg border-2 border-zinc-800 bg-zinc-900/50 text-zinc-600 text-sm"
-            >
-              Attempt {guesses.length + i + 1} of {MAX_ATTEMPTS}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Game Over Modal */}
-      <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800 text-white">
-          <div className="text-4xl mb-4 text-center">{won ? "🎉" : "😢"}</div>
-          <h2 className="text-2xl font-bold mb-4 text-center">
-            {won ? `You got it in ${guesses.length} ${guesses.length === 1 ? "try" : "tries"}!` : "Game Over!"}
-          </h2>
-
-          <Button
-            onClick={handleShare}
-            className={`mb-6 w-full text-white border border-zinc-700 ${copied ? "bg-zinc-700" : "bg-zinc-800 hover:bg-zinc-700"}`}
-          >
-            {copied ? "Copied!" : "Share Results"}
-          </Button>
-          
-          {/* Answer details */}
-          {track && (
-            <div className="bg-black border border-zinc-800 rounded-lg p-4">
-              <img
-                src={track.album.image}
-                alt={track.name}
-                className="w-32 h-32 mx-auto rounded mb-3"
-              />
-              <p className="text-xl font-bold">{track.name}</p>
-              <p className="text-gray-400">{track.artists.join(", ")}</p>
-              <p className="text-sm text-gray-500 mt-1">{track.album.name}</p>
+    <div className="min-h-screen flex flex-col bg-white text-dark font-sans">
+      <AppHeader />
+      <main className="flex flex-col items-center justify-start grow py-8 px-4">
+        <div className="w-full max-w-lg mx-auto">
+          <div className="w-full bg-white flex flex-col items-center">
+          {track.previewUrl && (
+            <audio ref={audioRef} src={track.previewUrl} />
+          )}
+          <button
+            onClick={isPlaying ? pause : play}
+            className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-md bg-white border-2 border-gray-300 text-primary-500 hover:border-primary-500 hover:shadow-lg active:scale-95 transition-all duration-150 cursor-pointer">
+            {isPlaying ? (
+              <svg className="w-9 h-9" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+              </svg>
+            ) : (
+              <svg className="w-9 h-9 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+            )}
+          </button>
+            <div className="relative w-full max-w-md mx-auto mb-8">
+              <div className="flex gap-0.5 h-16 items-end">
+                {[...Array(40)].map((_, i) => {
+              const currentDuration = gameOver ? 15 : (SNIPPET_DURATIONS[currentAttempt] || 0);
+                  const isUnlocked = i < (currentDuration / 15) * 40;
+                  
+                  const seed = track.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                  const freq1 = 0.2 + (seed % 10) / 50;
+                  const freq2 = 0.1 + (seed % 7) / 40;
+                  const freq3 = 0.4 + (seed % 5) / 30;
+                  const offset1 = (seed % 31) / 10;
+                  const offset2 = (seed % 23) / 10;
+                  
+                  const wave1 = Math.sin(i * freq1 + offset1) * 0.4;
+                  const wave2 = Math.sin(i * freq2 + offset2) * 0.3;
+                  const wave3 = Math.sin(i * freq3 + seed) * 0.2;
+                  const heightPercent = 25 + (wave1 + wave2 + wave3 + 0.9) * 28;
+                  
+                  const barProgress = (i / 40) * currentDuration;
+                  const hasPlayed = currentTime > barProgress;
+                  
+              return (
+                <div
+                  key={i}
+                      className={`flex-1 rounded-sm ${
+                        !isUnlocked 
+                          ? "bg-gray-200" 
+                          : hasPlayed
+                            ? "bg-primary-600"
+                            : "bg-primary-500"
+                      } ${isPlaying && isUnlocked ? "animate-wave-pulse" : ""}`}
+                      style={{ 
+                        height: `${heightPercent}%`,
+                        opacity: isUnlocked ? 0.9 : 0.4,
+                        animationDelay: `${(i % 5) * 0.08}s`,
+                      }}
+                />
+              );
+            })}
+              </div>
+          </div>
+          {!gameOver && (
+            <div className="w-full max-w-md mb-8">
+              <Autocomplete onSelect={handleGuess} disabled={gameOver} />
+              <p className="text-sm text-gray-500 mt-3 text-center font-sans">
+                Attempt <span className="font-semibold text-dark">{currentAttempt + 1}</span> of <span className="font-semibold text-dark">{MAX_ATTEMPTS}</span> · <span className="font-semibold text-dark">{SNIPPET_DURATIONS[currentAttempt]}s</span> unlocked
+              </p>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
+          {gameOver && (
+            <Button
+              onClick={() => setShowModal(true)}
+              className="mb-6 bg-dark hover:bg-gray-600 text-white font-sans font-semibold px-8 py-3 rounded transition-colors cursor-pointer"
+            >
+              View Results
+            </Button>
+          )}
+          <div className="w-full max-w-md mb-8">
+            <h3 className="text-base font-bold mb-4 text-dark uppercase tracking-wide">Your Guesses</h3>
+            <div className="space-y-2">
+              {guesses.map((guess, i) => (
+                <div
+                  key={i}
+                  className={`p-4 rounded border-2 flex items-center justify-between text-sm font-sans font-medium transition-all duration-200 ${
+                    guess.correct
+                      ? "bg-correct-light border-correct text-dark"
+                      : "bg-wrong-light border-wrong text-dark"
+                  }`}
+                >
+                  <span className="flex-1">{guess.guess}</span>
+                  <span className="text-lg ml-2">{guess.correct ? "✓" : "✗"}</span>
+                </div>
+              ))}
+              {[...Array(MAX_ATTEMPTS - guesses.length)].map((_, i) => (
+                <div
+                  key={`remaining-${i}`}
+                  className="p-4 rounded border-2 border-gray-300 bg-white text-gray-400 text-sm font-sans"
+                >
+                  Attempt {guesses.length + i + 1} of {MAX_ATTEMPTS}
+                </div>
+              ))}
+            </div>
+          </div>
+          <Dialog open={showModal} onOpenChange={setShowModal}>
+            <DialogContent className="max-w-[85vw] sm:max-w-md bg-white border-2 border-gray-300 text-dark font-sans shadow-lg rounded">
+              <DialogTitle className="sr-only">
+                {won ? "Congratulations!" : "Game Over"}
+              </DialogTitle>
+              <div className="text-4xl sm:text-5xl mb-3 text-center">{won ? "🎉" : "😔"}</div>
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center text-dark font-sans">
+                {won ? `You got it in ${guesses.length} ${guesses.length === 1 ? "try" : "tries"}!` : "Better luck next time!"}
+              </h2>
+              <Button
+                onClick={handleShare}
+                className={`mb-4 sm:mb-6 w-full text-white bg-correct hover:bg-green-700 font-sans font-semibold py-2.5 sm:py-3 text-sm sm:text-base rounded transition-all duration-150 cursor-pointer ${copied ? "opacity-75" : ""}`}
+              >
+                {copied ? "Copied to Clipboard!" : "Share Results"}
+              </Button>
+              {track && (
+                <div className="bg-gray-100 border border-gray-300 rounded p-3 sm:p-4 text-center">
+                  <img
+                    src={track.album.image}
+                    alt={track.name}
+                    className="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded shadow mb-2 sm:mb-3"
+                  />
+                  <p className="text-base sm:text-lg font-bold text-dark font-sans">{track.name}</p>
+                  <p className="text-sm sm:text-base text-gray-500 font-sans mt-1">{track.artists.join(", ")}</p>
+                  <p className="text-xs sm:text-sm text-gray-400 font-sans mt-1">{track.album.name}</p>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+    </main>
+    <footer className="w-full py-4 text-center text-sm text-gray-400 bg-white border-t border-gray-200 font-sans">
+        <span className="text-dark font-semibold">Beatdle</span> © 2026 · {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+      </footer>
     </div>
   );
 }
