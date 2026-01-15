@@ -1,55 +1,60 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaCalendarAlt, FaPlus, FaSignInAlt } from 'react-icons/fa';
-import Header from '../components/Header';
 import { Button } from '@/components/ui/button';
 
 const Home: React.FC = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-black font-sans text-white">
-      <Header />
-      <main className="flex flex-col items-center justify-center grow p-4">
-        <div className="text-center mb-8">
-        <div className="w-32 h-32 mx-auto mb-4 flex items-center justify-center">
+    <div className="flex flex-col min-h-screen bg-white font-sans text-dark">
+      <main className="flex flex-col items-center justify-center grow px-6 sm:px-4">
+        <div className="flex flex-col items-center justify-center mb-8 px-4">
           <img
             src="/Beatdle_Logo.png"
-            alt="Logo"
-            className="w-full h-full object-contain"
+            alt="Beatdle Logo"
+            className="w-28 h-28 mb-4 object-contain"
           />
-        </div>
-          <div className="bg-zinc-900 border border-zinc-800 px-12 py-3 rounded-lg text-white text-2xl font-bold tracking-wider">BEATDLE</div>
+          <h1 className="text-5xl font-bold tracking-tight mb-3 text-dark" style={{fontFamily: 'Georgia, Times, serif'}}>
+            Beatdle
+          </h1>
+          <p className="text-2xl font-normal text-gray-500 text-center max-w-lg px-2">
+            Guess the song in 5 tries
+          </p>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 p-6 w-full max-w-3xl text-center mb-12 flex items-center justify-center text-gray-100 text-lg rounded-xl leading-relaxed">
-        It is a music guessing game that combines daily Wordle-style challenges with customizable multiplayer sessions. Each day, all users get the same "Daily Beatdle" where they have 5 attempts to guess the track using progressive audio snippets.
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mb-8 w-full max-w-[210px] sm:max-w-2xl">
+          <Link to="/daily" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-48 h-12 text-base font-semibold bg-dark hover:bg-gray-600 text-white rounded border-none shadow transition-colors cursor-pointer">
+              Play Daily
+            </Button>
+          </Link>
+          <Link to="/create-lobby" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-48 h-12 text-base font-semibold bg-white text-dark border-2 border-gray-300 rounded hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
+              Create Lobby
+            </Button>
+          </Link>
+          <Link to="/join-lobby" className="w-full sm:w-auto">
+            <Button className="w-full sm:w-48 h-12 text-base font-semibold bg-white text-dark border-2 border-gray-300 rounded hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
+              Join Lobby
+            </Button>
+          </Link>
         </div>
 
-        <div className="flex flex-col md:flex-row justify-center items-center space-y-6 md:space-y-0 md:space-x-12 w-full max-w-4xl">
-          <div className="flex flex-col items-center">
-            <div className="w-24 h-24 bg-zinc-900 border-2 border-emerald-500 rounded-full flex items-center justify-center text-emerald-400 font-bold mb-4">
-              <FaCalendarAlt size={48} />
-            </div>
-            <Link to="/daily" className="w-48">
-              <Button className="w-full h-16 text-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700">Play</Button>
-            </Link>
+        <div className="w-16 h-px bg-gray-300 mb-6"></div>
+
+        <div className="flex flex-row justify-center items-center gap-8 sm:gap-12 mb-6">
+          <Link to="/signup" className="text-base text-gray-500 hover:text-dark transition-colors font-medium">
+            Sign Up
+          </Link>
+          <Link to="/login" className="text-base text-gray-500 hover:text-dark transition-colors font-medium">
+            Log In
+          </Link>
+        </div>
+
+        <div className="text-center px-4">
+          <div className="text-sm sm:text-base text-gray-400 mb-2">
+            Daily music challenges. Test your ears. Share your results.
           </div>
-
-          <div className="flex flex-col items-center">
-            <div className="w-24 h-24 bg-zinc-900 border-2 border-purple-500 rounded-full flex items-center justify-center text-purple-400 font-bold mb-4">
-              <FaPlus size={48} />
-            </div>
-            <Link to="/create-lobby" className="w-48">
-              <Button className="w-full h-16 text-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700">Create</Button>
-            </Link>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <div className="w-24 h-24 bg-zinc-900 border-2 border-blue-500 rounded-full flex items-center justify-center text-blue-400 font-bold mb-4">
-              <FaSignInAlt size={48} />
-            </div>
-            <Link to="/join-lobby" className="w-48">
-              <Button className="w-full h-16 text-xl bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700">Join</Button>
-            </Link>
+          <div className="text-xs sm:text-sm text-gray-400">
+            © 2026 Beatdle
           </div>
         </div>
       </main>
