@@ -50,5 +50,5 @@ export interface StartGamePayload {
 export interface SubmitGuessPayload {
   lobbyId: string;
   playerId: string;
-  guess: string;
+  correct: boolean;
 }

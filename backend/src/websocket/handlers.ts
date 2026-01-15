@@ -1,7 +1,7 @@
 import { WebSocket, WebSocketServer } from 'ws';
 import type { Player, JoinLobbyPayload, StartGamePayload, SubmitGuessPayload } from '../types/index.js';
 import { getRandomTrack } from '../services/spotify.js';
-import { SCORE_POINTS, MAX_ROUNDS } from '../constants.js';
+import { SCORE_POINTS, MAX_ROUNDS, MAX_PLAYERS } from '../constants.js';
 import {
   getOrCreateLobby,
   getLobby,
@@ -81,6 +81,17 @@ function handleJoinLobby(ws: WebSocket, payload: JoinLobbyPayload): string {
 
   const lobby = getOrCreateLobby(lobbyId);
 
+  if (lobby.players.length >= MAX_PLAYERS) {
+    ws.send(
+      JSON.stringify({
+        type: 'error',
+        payload: { message: `Lobby is full (max ${MAX_PLAYERS} players)` },
+      })
+    );
+    ws.close();
+    return playerId;
+  }
+
   const newPlayer: Player = {
     id: playerId,
     name,
@@ -118,16 +129,14 @@ async function handleStartGame(payload: StartGamePayload): Promise<void> {
 }
 
 function handlePlayerGuess(payload: SubmitGuessPayload): void {
-  const { lobbyId, playerId, guess } = payload;
+  const { lobbyId, playerId, correct } = payload;
   const lobby = getLobby(lobbyId);
   if (!lobby) return;
 
   const player = lobby.players.find((p) => p.id === playerId);
   if (!player) return;
 
-  if (player.isCorrect || player.currentAttempt >= 5) return;
-
-  const correct = guess === 'correct'; 
+  if (player.isCorrect || player.currentAttempt >= 5) return; 
   player.guesses.push(correct ? 'correct' : 'wrong');
   player.currentAttempt = player.guesses.length;
 
