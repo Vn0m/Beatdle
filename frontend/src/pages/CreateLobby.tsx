@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import AppHeader from "../components/AppHeader";
 
 export default function CreateLobby() {
   const [name, setName] = useState("");
   const navigate = useNavigate();
 
   const createLobby = () => {
-    // Trim the name and check if it's empty
     const trimmedName = name.trim();
     if (!trimmedName) return;
 
@@ -16,76 +16,34 @@ export default function CreateLobby() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-black font-sans text-white">
-      {/* Header */}
-      <header className="flex items-center p-4 bg-zinc-900 border-b border-zinc-800 relative">
-        <Link
-          to="/"
-          className="p-2 rounded-full hover:bg-zinc-800 transition-colors absolute"
-        >
-          {/* Back Arrow SVG Icon */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-6 w-6"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth={2}
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-        </Link>
-        {/* Title (inspired by BEATDLE box) */}
-        <div className="grow text-center">
-          <div className="bg-zinc-900 border border-zinc-800 px-6 py-2 rounded-lg text-white text-xl font-bold tracking-wider inline-block">
-            CREATE LOBBY
-          </div>
-        </div>
-        {/* Placeholder for hamburger menu, keeps title centered */}
-        <div className="w-10 h-10"></div>
-      </header>
+    <div className="flex flex-col min-h-screen bg-white font-sans text-dark">
+      <AppHeader />
 
-      {/* Main Content */}
       <main className="flex flex-col items-center justify-center grow p-4">
         <div className="w-full max-w-md flex flex-col items-center space-y-8">
-          {/* Logo (from Home) */}
-          <div className="w-32 h-32 mx-auto flex items-center justify-center">
+          <div className="w-24 h-24 mx-auto flex items-center justify-center">
             <img
-              src="/Beatdle_Logo.png" // Assuming this logo is in your /public folder
-              alt="Logo"
-              className="w-full h-full object-contain"
-              onError={(e) => {
-                // Fallback in case the image doesn't load
-                (e.currentTarget as HTMLImageElement).style.display = 'none';
-                const placeholder = document.createElement('div');
-                placeholder.className = 'w-32 h-32 bg-gray-700 rounded-full flex items-center justify-center text-gray-400';
-                placeholder.innerText = 'Logo';
-                e.currentTarget.parentNode?.replaceChild(placeholder, e.currentTarget);
-              }}
-            />
+              src="/Beatdle_Logo.png"
+              alt="Beatdle Logo"
+              className="w-full h-full object-contain"/>
           </div>
 
-          {/* Form */}
-          <div className="w-full flex flex-col space-y-6">
+          <h1 className="text-2xl font-bold text-dark">Create Lobby</h1>
+
+          <div className="w-full flex flex-col space-y-4">
             <input
               type="text"
               placeholder="Your name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="bg-zinc-900 border-2 border-zinc-800 text-white text-lg rounded-lg p-4 w-full focus:outline-none focus:border-emerald-500 transition-colors"
-              autoFocus
-            />
+              className="w-full px-4 py-3.5 rounded border-2 border-gray-300 bg-white text-dark font-sans text-base focus:border-gray-500 focus:outline-none transition-colors placeholder:text-gray-400"
+              autoFocus/>
 
             <Button
               onClick={createLobby}
-              className="w-full h-16 text-xl font-semibold bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700"
-              disabled={!name.trim()}
-            >
-              Create
+              className="w-full h-14 text-lg font-semibold bg-dark hover:bg-gray-600 text-white rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!name.trim()}>
+              Create Lobby
             </Button>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 
-import Header from '../components/Header';
+import AppHeader from '../components/AppHeader';
 interface UserProfile {
   user_id: number;
   username: string;
@@ -13,7 +13,6 @@ interface UserProfile {
 }
 
 const Profile: React.FC = () => {
-  // We'll get the user ID from the URL, e.g., /profile/1
   const { id } = useParams<{ id: string }>();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -22,8 +21,6 @@ const Profile: React.FC = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        // Fetch data from our new API endpoint.
-        // Vite will proxy this request from /api/users to http://localhost:8000/api/users
         const response = await fetch(`/api/users/${id}`);
         if (!response.ok) {
           throw new Error('Profile not found');
@@ -38,61 +35,55 @@ const Profile: React.FC = () => {
     };
 
     fetchUserProfile();
-  }, [id]); // Re-run effect if the ID in the URL changes
+  }, [id]); 
 
   if (loading) {
-    // Simple loading state
     return (
-        <div className="flex justify-center items-center min-h-screen bg-zinc-900 text-white">
+        <div className="flex justify-center items-center min-h-screen bg-white text-dark font-sans">
             Loading profile...
         </div>
     );
   }
 
   if (error) {
-    // Simple error state
     return (
-        <div className="flex flex-col justify-center items-center min-h-screen bg-zinc-900 text-white">
-            <p className="text-red-500">{error}</p>
-            <Link to="/" className="mt-4 text-blue-400 hover:underline">&larr; Back to Home</Link>
+        <div className="flex flex-col justify-center items-center min-h-screen bg-white text-dark font-sans">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Link to="/" className="text-gray-500 hover:text-dark transition-colors">&larr; Back to Home</Link>
         </div>
     );
   }
 
   if (!user) {
-    // This case should be covered by loading/error, but good to have
     return null;
   }
 
   return (
-    // Main profile page UI
-    <div className="min-h-screen bg-zinc-900 text-white">
-      {/* Use the new reusable Header */}
-      <Header />
+    <div className="min-h-screen bg-white text-dark font-sans">
+      <AppHeader />
 
-      <div className="max-w-md mx-auto bg-zinc-900 border border-zinc-800 rounded-lg shadow-lg p-6 mt-4">
-        <h1 className="text-3xl font-bold mb-4 text-center">{user.username}</h1>
-        <p className="text-gray-400 mb-6 text-center">
-          Member since: {new Date(user.created_at).toLocaleDateString()}
+      <div className="max-w-lg mx-auto bg-white border-2 border-gray-300 rounded shadow p-8 mt-8 mb-8">
+        <h1 className="text-3xl font-bold mb-2 text-center text-dark">{user.username}</h1>
+        <p className="text-gray-500 mb-8 text-center text-sm">
+          Member since {new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </p>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-black border border-zinc-800 p-4 rounded-lg text-center">
-            <div className="text-2xl font-bold">{user.games_played}</div>
-            <div className="text-gray-400">Games Played</div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white border-2 border-gray-300 p-5 rounded text-center hover:border-primary-500 transition-colors">
+            <div className="text-3xl font-bold text-dark">{user.games_played}</div>
+            <div className="text-sm text-gray-500 mt-1 uppercase tracking-wide font-semibold">Games Played</div>
           </div>
-          <div className="bg-black border border-zinc-800 p-4 rounded-lg text-center">
-            <div className="text-2xl font-bold">{user.games_won}</div>
-            <div className="text-gray-400">Games Won</div>
+          <div className="bg-white border-2 border-gray-300 p-5 rounded text-center hover:border-primary-500 transition-colors">
+            <div className="text-3xl font-bold text-dark">{user.games_won}</div>
+            <div className="text-sm text-gray-500 mt-1 uppercase tracking-wide font-semibold">Games Won</div>
           </div>
-          <div className="bg-black border border-zinc-800 p-4 rounded-lg text-center">
-            <div className="text-2xl font-bold">{user.current_streak}</div>
-            <div className="text-gray-400">Current Streak</div>
+          <div className="bg-white border-2 border-gray-300 p-5 rounded text-center hover:border-primary-500 transition-colors">
+            <div className="text-3xl font-bold text-primary-500">{user.current_streak}</div>
+            <div className="text-sm text-gray-500 mt-1 uppercase tracking-wide font-semibold">Current Streak</div>
           </div>
-          <div className="bg-black border border-zinc-800 p-4 rounded-lg text-center">
-            <div className="text-2xl font-bold">{user.max_streak}</div>
-            <div className="text-gray-400">Max Streak</div>
+          <div className="bg-white border-2 border-gray-300 p-5 rounded text-center hover:border-primary-500 transition-colors">
+            <div className="text-3xl font-bold text-primary-500">{user.max_streak}</div>
+            <div className="text-sm text-gray-500 mt-1 uppercase tracking-wide font-semibold">Max Streak</div>
           </div>
         </div>
       </div>

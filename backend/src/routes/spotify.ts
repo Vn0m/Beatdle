@@ -11,7 +11,7 @@ router.get('/track/:id', async (req, res) => {
     res.json(track);
   } catch (error) {
     console.error('Error fetching track:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch track from Spotify'
     });
   }
@@ -27,7 +27,7 @@ router.get('/search', async (req, res) => {
     res.json({ results });
   } catch (error) {
     console.error('Error searching tracks:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to search tracks'
     });
   }
@@ -39,7 +39,7 @@ router.get('/daily-song', async (req, res) => {
     res.json(track);
   } catch (error) {
     console.error('Error fetching daily song:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch daily song'
     });
   }
@@ -51,7 +51,7 @@ router.get('/random-track', async (req, res) => {
     res.json(track);
   } catch (error) {
     console.error('Error fetching random track:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch random track'
     });
   }
