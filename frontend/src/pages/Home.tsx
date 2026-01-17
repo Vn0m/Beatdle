@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 
 const Home: React.FC = () => {
   return (
-    <div className="flex flex-col min-h-screen bg-white font-sans text-dark">
-      <main className="flex flex-col items-center justify-center grow px-6 sm:px-4">
+    <div className="flex flex-col h-screen bg-white font-sans text-dark overflow-hidden">
+      <main className="flex flex-col items-center justify-center grow px-6 sm:px-4 overflow-y-auto">
         <div className="flex flex-col items-center justify-center mb-8 px-4">
           <img
             src="/Beatdle_Logo.png"

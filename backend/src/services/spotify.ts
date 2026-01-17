@@ -133,12 +133,12 @@ export async function getTrack(trackId: string){
     }
 }
 
-export async function getDailyTrack(){
+export async function getDailyTrack(userDate?: string){
     const token = await getSpotifyAccessToken();
     if(!token) throw new Error("Unable to get Spotify access token");
 
     const searchTerms = ['pop', 'hits', 'top', 'billboard', 'viral'];
-    const today = new Date().toISOString().split('T')[0]!;
+    const today = userDate || new Date().toISOString().split('T')[0]!;
     const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
     const searchTerm = searchTerms[seed % searchTerms.length];
     

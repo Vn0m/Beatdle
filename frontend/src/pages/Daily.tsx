@@ -4,7 +4,7 @@ import { fetchDailySong, type TrackSuggestion } from "../api/spotify";
 import type { SpotifyTrack } from "../types";
 import Autocomplete from "../components/Autocomplete";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { MAX_ATTEMPTS, SNIPPET_DURATIONS } from "../constants";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
 
@@ -221,6 +221,9 @@ export default function Daily() {
               <DialogTitle className="sr-only">
                 {won ? "Congratulations!" : "Game Over"}
               </DialogTitle>
+              <DialogDescription className="sr-only">
+                {won ? `You guessed the song correctly in ${guesses.length} attempts` : "You did not guess the song correctly"}
+              </DialogDescription>
               <div className="text-4xl sm:text-5xl mb-3 text-center">{won ? "🎉" : "😔"}</div>
               <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center text-dark font-sans">
                 {won ? `You got it in ${guesses.length} ${guesses.length === 1 ? "try" : "tries"}!` : "Better luck next time!"}

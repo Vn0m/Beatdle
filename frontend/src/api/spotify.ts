@@ -9,7 +9,13 @@ export async function fetchTrack(id: string): Promise<SpotifyTrack> {
 }
 
 export async function fetchDailySong(): Promise<SpotifyTrack> {
-    const res = await fetch(`${API_URL}/api/spotify/daily-song`);
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const userDate = `${year}-${month}-${day}`;
+    
+    const res = await fetch(`${API_URL}/api/spotify/daily-song?date=${userDate}`);
     if (!res.ok) throw new Error(`Failed to fetch daily song: ${res.status}`);
     return await res.json();
 }

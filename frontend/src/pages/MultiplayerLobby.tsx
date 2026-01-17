@@ -1,7 +1,7 @@
 import { Link, useParams, useLocation } from "react-router-dom";
 import AppHeader from "../components/AppHeader";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 import Autocomplete from "../components/Autocomplete";
 import { useWebSocket } from "../hooks/useWebSocket";
@@ -265,6 +265,9 @@ export default function MultiplayerLobby() {
       <Dialog open={gameOver} onOpenChange={() => {}}>
         <DialogContent className="max-w-[85vw] sm:max-w-md max-h-[85vh] overflow-y-auto">
           <DialogTitle className="sr-only">Game Complete</DialogTitle>
+          <DialogDescription className="sr-only">
+            Final scores and rankings for all players in the game
+          </DialogDescription>
           <div className="text-center py-3 sm:py-4 px-2">
             <div className="text-3xl sm:text-4xl mb-2 sm:mb-3">🏆</div>
             

@@ -35,7 +35,9 @@ router.get('/search', async (req, res) => {
 
 router.get('/daily-song', async (req, res) => {
   try {
-    const track = await getDailyTrack();
+    // Get user's local date from query parameter (format: YYYY-MM-DD)
+    const userDate = req.query.date as string | undefined;
+    const track = await getDailyTrack(userDate);
     res.json(track);
   } catch (error) {
     console.error('Error fetching daily song:', error);

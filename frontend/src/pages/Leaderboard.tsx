@@ -69,12 +69,14 @@ const Leaderboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-dark font-sans">
+    <div className="h-screen bg-white text-dark font-sans overflow-hidden flex flex-col">
       <AppHeader />
 
-      <div className="max-w-4xl mx-auto bg-white border-2 border-gray-300 rounded shadow overflow-hidden mt-8 mb-8">
-        <h1 className="text-3xl font-bold p-6 text-center text-dark border-b-2 border-gray-200">Leaderboard</h1>
-        {renderContent()}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto bg-white border-2 border-gray-300 rounded shadow overflow-hidden mt-8 mb-8">
+          <h1 className="text-3xl font-bold p-6 text-center text-dark border-b-2 border-gray-200">Leaderboard</h1>
+          {renderContent()}
+        </div>
       </div>
     </div>
   );
