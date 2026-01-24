@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { MAX_ATTEMPTS, SNIPPET_DURATIONS } from "../constants";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
+import AdUnit from "../components/AdUnit";
 
 export default function Daily() {
   
@@ -113,14 +114,32 @@ export default function Daily() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-dark font-sans">
+      <div className="hidden lg:block w-full py-2">
+        <div className="max-w-7xl mx-auto px-4">
+          <AdUnit 
+            adSlot={import.meta.env.VITE_ADSENSE_SLOT_POST_GAME}
+            style={{ display: 'block', minHeight: '90px' }}
+          />
+        </div>
+      </div>
       <AppHeader />
-      <main className="flex flex-col items-center justify-start grow py-8 px-4">
-        <div className="w-full max-w-lg mx-auto">
-          <div className="w-full bg-white flex flex-col items-center">
-          {track.previewUrl && (
-            <audio ref={audioRef} src={track.previewUrl} />
-          )}
-          <button
+      <main className="flex grow">
+        <div className="hidden lg:block w-48 xl:w-60 sticky top-0 h-screen">
+          <div className="p-4 flex items-center justify-center" style={{ height: '100%' }}>
+            <AdUnit 
+              adSlot={import.meta.env.VITE_ADSENSE_SLOT_LEADERBOARD}
+              style={{ display: 'block', minHeight: '600px', width: '100%' }}
+            />
+          </div>
+        </div>
+        
+        <div className="flex-1 flex flex-col items-center justify-start py-8 px-4">
+          <div className="w-full max-w-lg mx-auto">
+            <div className="w-full bg-white flex flex-col items-center">
+              {track.previewUrl && (
+                <audio ref={audioRef} src={track.previewUrl} />
+              )}
+              <button
             onClick={isPlaying ? pause : play}
             className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-md bg-white border-2 border-gray-300 text-primary-500 hover:border-primary-500 hover:shadow-lg active:scale-95 transition-all duration-150 cursor-pointer">
             {isPlaying ? (
@@ -173,24 +192,24 @@ export default function Daily() {
               );
             })}
               </div>
-          </div>
-          {!gameOver && (
-            <div className="w-full max-w-md mb-8">
-              <Autocomplete onSelect={handleGuess} disabled={gameOver} />
-              <p className="text-sm text-gray-500 mt-3 text-center font-sans">
-                Attempt <span className="font-semibold text-dark">{currentAttempt + 1}</span> of <span className="font-semibold text-dark">{MAX_ATTEMPTS}</span> · <span className="font-semibold text-dark">{SNIPPET_DURATIONS[currentAttempt]}s</span> unlocked
-              </p>
             </div>
-          )}
-          {gameOver && (
-            <Button
-              onClick={() => setShowModal(true)}
-              className="mb-6 bg-dark hover:bg-gray-600 text-white font-sans font-semibold px-8 py-3 rounded transition-colors cursor-pointer"
-            >
-              View Results
-            </Button>
-          )}
-          <div className="w-full max-w-md mb-8">
+            {!gameOver && (
+              <div className="w-full max-w-md mb-8">
+                <Autocomplete onSelect={handleGuess} disabled={gameOver} />
+                <p className="text-sm text-gray-500 mt-3 text-center font-sans">
+                  Attempt <span className="font-semibold text-dark">{currentAttempt + 1}</span> of <span className="font-semibold text-dark">{MAX_ATTEMPTS}</span> · <span className="font-semibold text-dark">{SNIPPET_DURATIONS[currentAttempt]}s</span> unlocked
+                </p>
+              </div>
+            )}
+            {gameOver && (
+              <Button
+                onClick={() => setShowModal(true)}
+                className="mb-6 bg-dark hover:bg-gray-600 text-white font-sans font-semibold px-8 py-3 rounded transition-colors cursor-pointer"
+              >
+                View Results
+              </Button>
+            )}
+            <div className="w-full max-w-md mb-8">
             <h3 className="text-base font-bold mb-4 text-dark uppercase tracking-wide">Your Guesses</h3>
             <div className="space-y-2">
               {guesses.map((guess, i) => (
@@ -248,10 +267,20 @@ export default function Daily() {
               )}
             </DialogContent>
           </Dialog>
+          </div>
         </div>
-      </div>
-    </main>
-    <footer className="w-full py-4 text-center text-sm text-gray-400 bg-white border-t border-gray-200 font-sans">
+        </div>
+        
+        <div className="hidden lg:block w-48 xl:w-60 sticky top-0 h-screen">
+          <div className="p-4 flex items-center justify-center" style={{ height: '100%' }}>
+            <AdUnit 
+              adSlot={import.meta.env.VITE_ADSENSE_SLOT_HOME_BANNER}
+              style={{ display: 'block', minHeight: '600px', width: '100%' }}
+            />
+          </div>
+        </div>
+      </main>
+      <footer className="w-full py-4 text-center text-sm text-gray-400 bg-white border-t border-gray-200 font-sans">
         <span className="text-dark font-semibold">Beatdle</span> © 2026 · {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
       </footer>
     </div>

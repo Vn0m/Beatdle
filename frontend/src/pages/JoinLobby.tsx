@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import AppHeader from "../components/AppHeader";
+import AdUnit from "../components/AdUnit";
 
 export default function JoinLobby() {
   const [name, setName] = useState("");
@@ -57,6 +58,13 @@ export default function JoinLobby() {
               Join Lobby
             </Button>
           </div>
+        </div>
+        
+        <div className="hidden lg:block w-full max-w-3xl mt-8">
+          <AdUnit 
+            adSlot={import.meta.env.VITE_ADSENSE_SLOT_LEADERBOARD}
+            style={{ display: 'block', minHeight: '90px' }}
+          />
         </div>
       </main>
     </div>

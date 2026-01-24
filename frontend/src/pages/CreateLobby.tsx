@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import AppHeader from "../components/AppHeader";
+import AdUnit from "../components/AdUnit";
 
 export default function CreateLobby() {
   const [name, setName] = useState("");
@@ -46,6 +47,13 @@ export default function CreateLobby() {
               Create Lobby
             </Button>
           </div>
+        </div>
+        
+        <div className="hidden lg:block w-full max-w-3xl mt-8">
+          <AdUnit 
+            adSlot={import.meta.env.VITE_ADSENSE_SLOT_POST_GAME}
+            style={{ display: 'block', minHeight: '90px' }}
+          />
         </div>
       </main>
     </div>

@@ -2,6 +2,7 @@ import { Link, useParams, useLocation } from "react-router-dom";
 import AppHeader from "../components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import AdUnit from "../components/AdUnit";
 
 import Autocomplete from "../components/Autocomplete";
 import { useWebSocket } from "../hooks/useWebSocket";
@@ -75,35 +76,55 @@ export default function MultiplayerLobby() {
   
   function renderLobby() {
     return (
-      <div className="w-full flex flex-col items-center px-4 py-8">
-        <h2 className="text-2xl font-semibold mb-2 text-center text-dark">Waiting Room</h2>
-        <p className="text-center text-sm mb-8 text-gray-500">
-          {name} {isHost && "• Host"}
-        </p>
-        {isHost && (
-          <Button onClick={startGame} className="w-full max-w-xs h-12 text-base font-semibold mb-8 bg-dark hover:bg-gray-600 text-white rounded transition-colors cursor-pointer">
-            Start Game
-          </Button>
-        )}
-        <div className="text-sm font-medium text-gray-500 mb-3">Players ({players.length})</div>
-        <div className="w-full max-w-sm max-h-96 overflow-y-auto pr-2">
-          <ul className="space-y-2.5">
-            {players.map(p => (
-              <div 
-                key={p.id} 
-                className={`px-4 py-3.5 flex justify-between items-center rounded-lg transition-all ${
-                  p.id === myId 
-                    ? "bg-primary-50 border-2 border-primary-500" 
-                    : "bg-white border border-gray-200 hover:border-gray-300"
-                }`}
-              >
-                <span className={`font-medium ${p.id === myId ? "text-dark" : "text-gray-700"}`}>
-                  {p.name} {p.isHost && "👑"}
-                </span>
-                <span className="text-sm text-gray-500">{p.score} pts</span>
-              </div>
-            ))}
-          </ul>
+      <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto w-full px-4 py-8">
+        <div className="hidden lg:block w-40 xl:w-48">
+          <div className="sticky top-4">
+            <AdUnit 
+              adSlot={import.meta.env.VITE_ADSENSE_SLOT_POST_GAME}
+              style={{ display: 'block', minHeight: '600px' }}
+            />
+          </div>
+        </div>
+        
+        <div className="flex-1 flex flex-col items-center">
+          <h2 className="text-2xl font-semibold mb-2 text-center text-dark">Waiting Room</h2>
+          <p className="text-center text-sm mb-8 text-gray-500">
+            {name} {isHost && "• Host"}
+          </p>
+          {isHost && (
+            <Button onClick={startGame} className="w-full max-w-xs h-12 text-base font-semibold mb-8 bg-dark hover:bg-gray-600 text-white rounded transition-colors cursor-pointer">
+              Start Game
+            </Button>
+          )}
+          <div className="text-sm font-medium text-gray-500 mb-3">Players ({players.length})</div>
+          <div className="w-full max-w-sm max-h-96 overflow-y-auto pr-2">
+            <ul className="space-y-2.5">
+              {players.map(p => (
+                <div 
+                  key={p.id} 
+                  className={`px-4 py-3.5 flex justify-between items-center rounded-lg transition-all ${
+                    p.id === myId 
+                      ? "bg-primary-50 border-2 border-primary-500" 
+                      : "bg-white border border-gray-200 hover:border-gray-300"
+                  }`}
+                >
+                  <span className={`font-medium ${p.id === myId ? "text-dark" : "text-gray-700"}`}>
+                    {p.name} {p.isHost && "👑"}
+                  </span>
+                  <span className="text-sm text-gray-500">{p.score} pts</span>
+                </div>
+              ))}
+            </ul>
+          </div>
+        </div>
+        
+        <div className="hidden lg:block w-40 xl:w-48">
+          <div className="sticky top-4">
+            <AdUnit 
+              adSlot={import.meta.env.VITE_ADSENSE_SLOT_LEADERBOARD}
+              style={{ display: 'block', minHeight: '600px' }}
+            />
+          </div>
         </div>
       </div>
     );
@@ -233,6 +254,13 @@ export default function MultiplayerLobby() {
                     Next Song
                   </Button>
                 )}
+                
+                <div className="hidden lg:block w-full max-w-3xl mt-8">
+                  <AdUnit 
+                    adSlot={import.meta.env.VITE_ADSENSE_SLOT_HOME_BANNER}
+                    style={{ display: 'block', minHeight: '90px' }}
+                  />
+                </div>
   
               </div>
   
