@@ -43,3 +43,11 @@ export interface WebSocketMessage {
   type: 'joinLobby' | 'updatePlayers' | 'startGame' | 'startRound' | 'roundOver' | 'gameOver' | 'playerGuess' | 'nextSong' | 'error';
   payload?: any;
 }
+
+export type HintType = 'year' | 'artist' | 'album';
+
+export interface HintState {
+  year: boolean;
+  artist: boolean;
+  album: boolean;
+}
