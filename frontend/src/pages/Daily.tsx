@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import AppHeader from "../components/AppHeader";
 import { fetchDailySong, type TrackSuggestion } from "../api/spotify";
-import type { SpotifyTrack } from "../types";
+import type { SpotifyTrack, HintState } from "../types";
 import Autocomplete from "../components/Autocomplete";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { MAX_ATTEMPTS, SNIPPET_DURATIONS } from "../constants";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
 import AdUnit from "../components/AdUnit";
+import HintButton from "../components/HintButton";
 
 export default function Daily() {
   
@@ -19,6 +20,12 @@ export default function Daily() {
   const [won, setWon] = useState(false);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [usedHints, setUsedHints] = useState<HintState>({
+    year: false,
+    artist: false,
+    album: false,
+  });
+  const [showHints, setShowHints] = useState(false);
 
   const duration = gameOver ? 15 : (SNIPPET_DURATIONS[currentAttempt] || 15);
   const { audioRef, isPlaying, currentTime, play, pause, playFullSong } = useAudioPlayer({
@@ -29,6 +36,27 @@ export default function Daily() {
   useEffect(() => {
     loadDailySong();
   }, []);
+
+  useEffect(() => {
+    if (track) {
+      const storageKey = `beatdle-hints-${track.id}`;
+      const savedHints = localStorage.getItem(storageKey);
+      if (savedHints) {
+        try {
+          setUsedHints(JSON.parse(savedHints));
+        } catch (error) {
+          console.error("Failed to load hints from localStorage:", error);
+        }
+      }
+    }
+  }, [track]);
+
+  useEffect(() => {
+    if (track) {
+      const storageKey = `beatdle-hints-${track.id}`;
+      localStorage.setItem(storageKey, JSON.stringify(usedHints));
+    }
+  }, [usedHints, track]);
 
   const loadDailySong = async () => {
     try {
@@ -74,14 +102,16 @@ export default function Daily() {
       } else if (guess && !guess.correct) {
         grid += "🟥";
       } else {
-        grid += "⬜️";
+        grid += "⬜";
       }
     }
 
     const dailyId = track.id.slice(-5);
     const tries = won ? guesses.length : "X";
+    const hintsUsedCount = Object.values(usedHints).filter(Boolean).length;
+    const hintsText = hintsUsedCount > 0 ? ` (${hintsUsedCount} hint${hintsUsedCount > 1 ? 's' : ''})` : "";
     
-    return `Beatdle #${dailyId} ${tries}/${MAX_ATTEMPTS}\n\n${grid}`;
+    return `Beatdle #${dailyId} ${tries}/${MAX_ATTEMPTS}${hintsText}\n${grid}`;
   };
 
   const handleShare = async () => {
@@ -94,6 +124,29 @@ export default function Daily() {
       console.error("Failed to copy results: ", err);
       alert("Failed to copy results. You may need to grant clipboard permissions.");
     }
+  };
+
+  const revealYear = () => {
+    if (!track || usedHints.year) return;
+    setUsedHints({ ...usedHints, year: true });
+  };
+
+  const revealArtistInitial = () => {
+    if (!track || usedHints.artist) return;
+    setUsedHints({ ...usedHints, artist: true });
+  };
+
+  const revealAlbum = () => {
+    if (!track || usedHints.album) return;
+    setUsedHints({ ...usedHints, album: true });
+  };
+
+  const getYearFromDate = (dateString: string): string => {
+    return new Date(dateString).getFullYear().toString();
+  };
+
+  const getArtistInitial = (artists: string[]): string => {
+    return artists[0]?.[0]?.toUpperCase() || "?";
   };
 
   if (loading) {
@@ -199,6 +252,39 @@ export default function Daily() {
                 <p className="text-sm text-gray-500 mt-3 text-center font-sans">
                   Attempt <span className="font-semibold text-dark">{currentAttempt + 1}</span> of <span className="font-semibold text-dark">{MAX_ATTEMPTS}</span> · <span className="font-semibold text-dark">{SNIPPET_DURATIONS[currentAttempt]}s</span> unlocked
                 </p>
+                
+                {/* Hints Section */}
+                <div className="mt-6">
+                  <button
+                    onClick={() => setShowHints(!showHints)}
+                    className="w-full py-2 px-4 text-sm font-medium text-gray-600 hover:text-primary-500 transition-colors font-sans cursor-pointer"
+                  >
+                    {showHints ? "Hide Hints" : "Need a hint?"}
+                  </button>
+                  
+                  {showHints && (
+                    <div className="mt-3 flex gap-2 flex-wrap sm:flex-nowrap">
+                      <HintButton
+                        label="Reveal Year"
+                        revealedInfo={`Year: ${getYearFromDate(track.releaseDate)}`}
+                        isRevealed={usedHints.year}
+                        onReveal={revealYear}
+                      />
+                      <HintButton
+                        label="Artist Initial"
+                        revealedInfo={`Starts with: ${getArtistInitial(track.artists)}`}
+                        isRevealed={usedHints.artist}
+                        onReveal={revealArtistInitial}
+                      />
+                      <HintButton
+                        label="Album Name"
+                        revealedInfo={`Album: ${track.album.name}`}
+                        isRevealed={usedHints.album}
+                        onReveal={revealAlbum}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             )}
             {gameOver && (
