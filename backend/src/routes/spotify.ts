@@ -1,5 +1,5 @@
 import express from 'express';
-import { getTrack, getDailyTrack, searchTracks, getRandomTrack } from '../services/spotify.js';
+import { getTrack, getDailyTrack, searchTracks, getRandomTrack, getCustomTrack } from '../services/spotify.js';
 
 const router = express.Router();
 
@@ -54,6 +54,45 @@ router.get('/random-track', async (req, res) => {
     console.error('Error fetching random track:', error);
     res.status(500).json({
       error: 'Failed to fetch random track'
+    });
+  }
+});
+
+router.get('/custom-track', async (req, res) => {
+  try {
+    const genre = req.query.genre as string | undefined;
+    const artist = req.query.artist as string | undefined;
+    const decadeStart = req.query.decadeStart ? parseInt(req.query.decadeStart as string, 10) : undefined;
+    const decadeEnd = req.query.decadeEnd ? parseInt(req.query.decadeEnd as string, 10) : undefined;
+
+    if (decadeStart && (isNaN(decadeStart) || decadeStart < 1900 || decadeStart > 2100)) {
+      return res.status(400).json({ error: 'Invalid decadeStart value' });
+    }
+    if (decadeEnd && (isNaN(decadeEnd) || decadeEnd < 1900 || decadeEnd > 2100)) {
+      return res.status(400).json({ error: 'Invalid decadeEnd value' });
+    }
+    if (decadeStart && decadeEnd && decadeStart > decadeEnd) {
+      return res.status(400).json({ error: 'decadeStart must be less than or equal to decadeEnd' });
+    }
+
+    const settings: {
+      genre?: string;
+      artist?: string;
+      decadeStart?: number;
+      decadeEnd?: number;
+    } = {};
+
+    if (genre) settings.genre = genre;
+    if (artist) settings.artist = artist;
+    if (decadeStart) settings.decadeStart = decadeStart;
+    if (decadeEnd) settings.decadeEnd = decadeEnd;
+
+    const track = await getCustomTrack(settings);
+    res.json(track);
+  } catch (error) {
+    console.error('Error fetching custom track:', error);
+    res.status(500).json({
+      error: 'Failed to fetch custom track'
     });
   }
 });
