@@ -10,6 +10,13 @@ export interface Player {
   guesses: string[];
 }
 
+export interface CustomGameSettings {
+  genre?: string;
+  artist?: string;
+  decadeStart?: number;
+  decadeEnd?: number;
+}
+
 export interface LobbyState {
   clients: WebSocket[];
   players: Player[];
@@ -17,6 +24,7 @@ export interface LobbyState {
   round: number;
   maxRounds: number;
   usedTrackIds: string[];
+  customSettings?: CustomGameSettings;
 }
 
 export interface SpotifyTrack {
@@ -45,6 +53,7 @@ export interface JoinLobbyPayload {
 
 export interface StartGamePayload {
   lobbyId: string;
+  customSettings?: CustomGameSettings;
 }
 
 export interface SubmitGuessPayload {
