@@ -310,12 +310,8 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
 
   let queryParts: string[] = [];
   
-  if (settings?.genre) {
-    queryParts.push(`genre:${settings.genre.toLowerCase()}`);
-  }
-  
   if (settings?.artist) {
-    queryParts.push(`artist:${settings.artist}`);
+    queryParts.push(settings.artist);
   }
   
   if (settings?.decadeStart && settings?.decadeEnd) {
@@ -324,46 +320,58 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
     queryParts.push(`year:${settings.decadeStart}-${settings.decadeStart + 9}`);
   }
 
+  if (settings?.genre && !settings?.artist) {
+    queryParts.push(`genre:"${settings.genre.toLowerCase()}"`);
+  }
+
   if (queryParts.length === 0) {
     const fallbackTerms = ['pop', 'rock', 'hits', 'chart'];
     queryParts.push(fallbackTerms[Math.floor(Math.random() * fallbackTerms.length)]!);
   }
 
   const query = queryParts.join(' ');
-  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&market=US&limit=100`;
+  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&market=US&limit=50`;
 
   try {
     const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
     
-    if (!response.ok) throw new Error(`Spotify API error ${response.status}`);
+    if (!response.ok) {
+      console.error(`Spotify API error ${response.status}:`, await response.text());
+      throw new Error(`Spotify API error ${response.status}`);
+    }
     const data = await response.json();
 
     const excludedIds = new Set([...recentTrackIds, ...exclude]);
 
-    const validTracks = data.tracks.items
-      .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 60);
+    let validTracks = data.tracks.items
+      .filter((track: any) => {
+        if (!track?.id || excludedIds.has(track.id)) return false;
+        if (settings?.artist) {
+          const artistMatch = track.artists.some((a: any) => 
+            a.name.toLowerCase().includes(settings.artist!.toLowerCase())
+          );
+          return artistMatch;
+        }
+        return track.popularity >= 60;
+      });
 
     if (validTracks.length === 0) {
-      console.warn("No tracks found with custom filters, trying broader search...");
-      const broaderTracks = data.tracks.items
+      validTracks = data.tracks.items
         .filter((track: any) => track?.id && !excludedIds.has(track.id));
       
-      if (broaderTracks.length === 0) {
-        console.warn("No tracks found at all, falling back to random track");
+      if (validTracks.length === 0) {
         return getRandomTrack(exclude);
       }
-      
-      const randomTrack = broaderTracks[Math.floor(Math.random() * broaderTracks.length)];
-      addRecentTrack(randomTrack.id);
-      return getTrack(randomTrack.id);
     }
 
     const randomTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
     addRecentTrack(randomTrack.id);
     
-    return getTrack(randomTrack.id);
+    const track = await getTrack(randomTrack.id);
+    console.log(`🎵 Custom track: "${track.name}" by ${track.artists.join(', ')} (${track.releaseDate.slice(0, 4)})`);
+    return track;
   } catch (err) {
     console.warn("Failed to get custom track, falling back to random:", err);
     return getRandomTrack(exclude);
