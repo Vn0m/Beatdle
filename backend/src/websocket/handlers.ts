@@ -1,6 +1,6 @@
 import { WebSocket, WebSocketServer } from 'ws';
 import type { Player, JoinLobbyPayload, StartGamePayload, SubmitGuessPayload } from '../types/index.js';
-import { getRandomTrack } from '../services/spotify.js';
+import { getRandomTrack, getCustomTrack } from '../services/spotify.js';
 import { SCORE_POINTS, MAX_ROUNDS, MAX_PLAYERS } from '../constants.js';
 import {
   getOrCreateLobby,
@@ -47,7 +47,11 @@ async function startNextRound(lobbyId: string): Promise<void> {
 
   let track;
   try {
-    track = await getRandomTrack();
+    if (lobby.customSettings) {
+      track = await getCustomTrack(lobby.customSettings, lobby.usedTrackIds);
+    } else {
+      track = await getRandomTrack();
+    }
   } catch (err) {
     console.error('Failed to fetch track:', err);
     broadcastToLobby(lobbyId, {
@@ -120,9 +124,13 @@ function handleJoinLobby(ws: WebSocket, payload: JoinLobbyPayload): string {
 }
 
 async function handleStartGame(payload: StartGamePayload): Promise<void> {
-  const { lobbyId } = payload;
+  const { lobbyId, customSettings } = payload;
   const lobby = getLobby(lobbyId);
   if (!lobby) return;
+
+  if (customSettings) {
+    lobby.customSettings = customSettings;
+  }
 
   lobby.round = 0;
   await startNextRound(lobbyId);
