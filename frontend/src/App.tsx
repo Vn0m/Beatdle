@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home.tsx';
 import Daily from './pages/Daily.tsx';
+import CustomDaily from './pages/CustomDaily.tsx';
 import './index.css'; 
 import CreateLobby from './pages/CreateLobby.tsx';
 import JoinLobby from './pages/JoinLobby.tsx';
@@ -14,6 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/daily" element={<Daily />} />
+        <Route path="/custom-daily" element={<CustomDaily />} />
         <Route path="/create-lobby" element={<CreateLobby />} />
         <Route path="/join-lobby" element={<JoinLobby />} />
         <Route path="/multiplayer/:lobbyId" element={<MultiplayerLobby />} />
