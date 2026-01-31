@@ -1,8 +1,12 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { ChevronDown } from 'lucide-react';
 
 const Home: React.FC = () => {
+  const [showMultiplayerDropdown, setShowMultiplayerDropdown] = useState(false);
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col min-h-screen bg-white font-sans text-dark">
       <main className="flex flex-col items-center justify-center grow px-6 sm:px-4">
@@ -26,14 +30,49 @@ const Home: React.FC = () => {
               Play Daily
             </Button>
           </Link>
-          <Link to="/create-lobby" className="w-full sm:w-auto">
-            <Button className="w-full sm:w-48 h-12 text-base font-semibold bg-white text-dark border-2 border-gray-300 rounded hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
-              Create Lobby
+          
+          <div className="relative w-full sm:w-auto">
+            <Button 
+              onClick={() => setShowMultiplayerDropdown(!showMultiplayerDropdown)}
+              className="w-full sm:w-48 h-12 text-base font-semibold bg-white text-dark border-2 border-gray-300 rounded hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer inline-flex items-center justify-center gap-1"
+            >
+              Multiplayer
+              <ChevronDown className="w-4 h-4" />
             </Button>
-          </Link>
-          <Link to="/join-lobby" className="w-full sm:w-auto">
+            {showMultiplayerDropdown && (
+              <>
+                <div 
+                  className="fixed inset-0 z-10" 
+                  onClick={() => setShowMultiplayerDropdown(false)}
+                />
+                <div className="absolute top-full mt-1 left-0 right-0 bg-white border-2 border-gray-300 rounded shadow-lg z-20 overflow-hidden">
+                  <button
+                    onClick={() => {
+                      setShowMultiplayerDropdown(false);
+                      navigate('/create-lobby');
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-dark hover:bg-gray-50 transition-colors cursor-pointer text-sm font-medium"
+                  >
+                    Create Lobby
+                  </button>
+                  <div className="h-px bg-gray-200" />
+                  <button
+                    onClick={() => {
+                      setShowMultiplayerDropdown(false);
+                      navigate('/join-lobby');
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-dark hover:bg-gray-50 transition-colors cursor-pointer text-sm font-medium"
+                  >
+                    Join Lobby
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          <Link to="/custom-daily" className="w-full sm:w-auto">
             <Button className="w-full sm:w-48 h-12 text-base font-semibold bg-white text-dark border-2 border-gray-300 rounded hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
-              Join Lobby
+              Custom Game
             </Button>
           </Link>
         </div>

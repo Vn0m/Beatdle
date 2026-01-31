@@ -1,13 +1,16 @@
 import { Link, useParams, useLocation } from "react-router-dom";
+import { useState } from "react";
 import AppHeader from "../components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import AdUnit from "../components/AdUnit";
+import FilterSelector from "../components/FilterSelector";
+import { Settings, ChevronDown, ChevronUp } from "lucide-react";
 
 import Autocomplete from "../components/Autocomplete";
 import { useWebSocket } from "../hooks/useWebSocket";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
-import type { TrackSuggestion } from "../types";
+import type { TrackSuggestion, GameFilters } from "../types";
 import { MAX_ATTEMPTS, MAX_ROUNDS, SNIPPET_DURATIONS } from "../constants";
 
 export default function MultiplayerLobby() {
@@ -17,6 +20,9 @@ export default function MultiplayerLobby() {
   const query = new URLSearchParams(location.search);
   const name = query.get("name") || "Anonymous";
   const initialIsHost = query.get("host") === "true";
+
+  const [customFilters, setCustomFilters] = useState<GameFilters>({});
+  const [showFilters, setShowFilters] = useState(false);
 
   const {
     myId,
@@ -75,6 +81,20 @@ export default function MultiplayerLobby() {
   }
   
   function renderLobby() {
+    const getFilterDisplay = () => {
+      if (Object.keys(customFilters).length === 0) return null;
+      const parts = [];
+      if (customFilters.genre) parts.push(`Genre: ${customFilters.genre}`);
+      if (customFilters.artist) parts.push(`Artist: ${customFilters.artist}`);
+      if (customFilters.decadeStart && customFilters.decadeEnd) {
+        parts.push(`Decade: ${customFilters.decadeStart}s`);
+      }
+      return parts.join(" • ");
+    };
+
+    const filterDisplay = getFilterDisplay();
+    const hasFilters = Object.keys(customFilters).length > 0;
+
     return (
       <div className="flex flex-col lg:flex-row gap-8 max-w-7xl mx-auto w-full px-4 py-8">
         <div className="hidden lg:block w-40 xl:w-48">
@@ -87,15 +107,43 @@ export default function MultiplayerLobby() {
         </div>
         
         <div className="flex-1 flex flex-col items-center">
-          <h2 className="text-2xl font-semibold mb-2 text-center text-dark">Waiting Room</h2>
+          <h2 className="text-2xl font-semibold mb-2 text-center text-dark">
+            Waiting Room
+          </h2>
           <p className="text-center text-sm mb-8 text-gray-500">
             {name} {isHost && "• Host"}
           </p>
+
           {isHost && (
-            <Button onClick={startGame} className="w-full max-w-xs h-12 text-base font-semibold mb-8 bg-dark hover:bg-gray-600 text-white rounded transition-colors cursor-pointer">
-              Start Game
-            </Button>
+            <>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="mb-4 px-4 py-2 text-sm font-medium text-gray-600 hover:text-dark transition-colors cursor-pointer flex items-center gap-2 border-2 border-gray-300 rounded hover:border-gray-400"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Configure Game (Optional)</span>
+                {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+
+              {showFilters && (
+                <div className="w-full max-w-2xl mb-6">
+                  <FilterSelector 
+                    onFiltersChange={setCustomFilters} 
+                    initialFilters={customFilters} 
+                  />
+                </div>
+              )}
+
+              {filterDisplay && (
+                <p className="text-xs text-center text-gray-500 mb-3 font-medium">{filterDisplay}</p>
+              )}
+
+              <Button onClick={() => startGame(hasFilters ? customFilters : undefined)} className="w-full max-w-xs h-12 text-base font-semibold mb-8 bg-dark hover:bg-gray-600 text-white rounded transition-colors cursor-pointer">
+                Start Game
+              </Button>
+            </>
           )}
+
           <div className="text-sm font-medium text-gray-500 mb-3">Players ({players.length})</div>
           <div className="w-full max-w-sm max-h-96 overflow-y-auto pr-2">
             <ul className="space-y-2.5">
