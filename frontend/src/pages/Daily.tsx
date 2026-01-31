@@ -9,6 +9,7 @@ import { MAX_ATTEMPTS, SNIPPET_DURATIONS } from "../constants";
 import { useAudioPlayer } from "../hooks/useAudioPlayer";
 import AdUnit from "../components/AdUnit";
 import HintButton from "../components/HintButton";
+import { Lightbulb } from "lucide-react";
 
 export default function Daily() {
   
@@ -257,8 +258,9 @@ export default function Daily() {
                 <div className="mt-6">
                   <button
                     onClick={() => setShowHints(!showHints)}
-                    className="w-full py-2 px-4 text-sm font-medium text-gray-600 hover:text-primary-500 transition-colors font-sans cursor-pointer"
+                    className="w-full py-2 px-4 text-sm font-medium text-gray-600 hover:text-primary-500 transition-colors font-sans cursor-pointer flex items-center justify-center gap-1.5"
                   >
+                    <Lightbulb className="w-4 h-4" />
                     {showHints ? "Hide Hints" : "Need a hint?"}
                   </button>
                   
