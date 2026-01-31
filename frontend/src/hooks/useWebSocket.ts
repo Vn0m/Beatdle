@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { Player, SpotifyTrack } from '../types';
+import type { Player, SpotifyTrack, GameFilters } from '../types';
 import { WS_URL } from '../constants';
 
 const ROUND_TIME_SECONDS = 90;
@@ -154,8 +154,12 @@ export function useWebSocket({ lobbyId, name, isHost }: UseWebSocketProps) {
     }
   };
 
-  const startGame = () => {
-    sendMessage({ type: 'startGame', payload: { lobbyId } });
+  const startGame = (customSettings?: GameFilters) => {
+    const payload: any = { lobbyId };
+    if (customSettings && Object.keys(customSettings).length > 0) {
+      payload.customSettings = customSettings;
+    }
+    sendMessage({ type: 'startGame', payload });
   };
 
   const submitGuess = (correct: boolean) => {

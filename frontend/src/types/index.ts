@@ -51,3 +51,10 @@ export interface HintState {
   artist: boolean;
   album: boolean;
 }
+
+export interface GameFilters {
+  genre?: string;
+  artist?: string;
+  decadeStart?: number;
+  decadeEnd?: number;
+}
