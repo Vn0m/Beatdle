@@ -23,8 +23,10 @@ A music guessing game inspired by Wordle. Listen to audio snippets and guess the
 ## Features
 
 - Daily song challenge (new song every day)
-- Real-time multiplayer lobbies
+- Custom games with filter options (genre, artist, decade)
+- Real-time multiplayer lobbies with custom game settings
 - Progressive audio reveals (3s → 15s)
+- Hint system (reveal year, artist initial, or album name)
 - User profiles and leaderboards
 - Spotify API integration
 
@@ -62,6 +64,7 @@ SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 Create `frontend/.env`:
 ```
 VITE_API_URL=http://localhost:8000
+VITE_WS_URL=ws://localhost:8000
 ```
 
 **4. Start the servers**
