@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 
 interface AdUnitProps {
@@ -23,14 +25,13 @@ export default function AdUnit({
 }: AdUnitProps) {
   const adRef = useRef<HTMLModElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
-  const clientId = import.meta.env.VITE_ADSENSE_CLIENT_ID;
+  const clientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
   useEffect(() => {
     if (!clientId || !adSlot || adLoaded) {
       return;
     }
 
-    // Check if the element is visible and has width before loading ad
     const checkAndLoadAd = () => {
       if (adRef.current) {
         const rect = adRef.current.getBoundingClientRect();
@@ -45,7 +46,6 @@ export default function AdUnit({
       }
     };
 
-    // Delay to ensure layout is ready
     const timer = setTimeout(checkAndLoadAd, 100);
 
     return () => {

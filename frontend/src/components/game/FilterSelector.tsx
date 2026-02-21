@@ -1,25 +1,13 @@
+'use client';
+
 import { useState } from 'react';
-import type { GameFilters } from '../types';
+import type { GameFilters } from '@/types';
+import { GENRES, DECADES } from '@/config/constants';
 
 interface FilterSelectorProps {
   onFiltersChange: (filters: GameFilters) => void;
   initialFilters?: GameFilters;
 }
-
-const GENRES = [
-  'pop', 'rock', 'hip-hop', 'country', 'jazz', 'classical', 
-  'electronic', 'r&b', 'reggae', 'indie', 'metal', 'folk'
-];
-
-const DECADES = [
-  { label: '1960s', start: 1960, end: 1969 },
-  { label: '1970s', start: 1970, end: 1979 },
-  { label: '1980s', start: 1980, end: 1989 },
-  { label: '1990s', start: 1990, end: 1999 },
-  { label: '2000s', start: 2000, end: 2009 },
-  { label: '2010s', start: 2010, end: 2019 },
-  { label: '2020s', start: 2020, end: 2029 },
-];
 
 export default function FilterSelector({ onFiltersChange, initialFilters }: FilterSelectorProps) {
   const [genre, setGenre] = useState(initialFilters?.genre || '');
@@ -45,7 +33,7 @@ export default function FilterSelector({ onFiltersChange, initialFilters }: Filt
       }
     } else {
       updateFilters({ decadeStart: undefined, decadeEnd: undefined });
-    }
+    };
   };
 
   const updateFilters = (updates: Partial<GameFilters>) => {

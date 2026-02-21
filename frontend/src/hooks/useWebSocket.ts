@@ -1,6 +1,8 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
-import type { Player, SpotifyTrack, GameFilters } from '../types';
-import { WS_URL } from '../constants';
+import type { Player, SpotifyTrack, GameFilters } from '@/types';
+import { WS_URL } from '@/config/constants';
 
 const ROUND_TIME_SECONDS = 90;
 
@@ -51,7 +53,7 @@ export function useWebSocket({ lobbyId, name, isHost }: UseWebSocketProps) {
 
     ws.onopen = () => {
       hasConnected = true;
-      setError(null); // Clear any previous errors
+      setError(null);
       ws.send(JSON.stringify({ type: 'joinLobby', payload: { lobbyId, name, isHost } }));
     };
 
@@ -112,17 +114,14 @@ export function useWebSocket({ lobbyId, name, isHost }: UseWebSocketProps) {
     };
 
     ws.onerror = () => {
-      // Don't set error state - it fires too early and causes flashing
       console.log('WebSocket error event (connection may still succeed)');
     };
     
     ws.onclose = () => {
       console.log('Disconnected from server');
-      // Only show error if we successfully connected before and then lost connection
       if (hasConnected && myIdRef.current) {
         setError('Lost connection to server');
       }
-      // Don't show error during initial connection - it causes flashing
     };
 
     return () => {
@@ -132,7 +131,6 @@ export function useWebSocket({ lobbyId, name, isHost }: UseWebSocketProps) {
     };
   }, [lobbyId, name, isHost]);
 
-  // Timer
   useEffect(() => {
     if (!gameStarted || gameOver || roundOver) return;
     const timer = setInterval(() => {
