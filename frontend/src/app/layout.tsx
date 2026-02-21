@@ -58,8 +58,7 @@ export const metadata: Metadata = {
     },
   },
   icons: {
-    icon: "/Beatdle_Logo.png",
-    apple: "/Beatdle_Logo.png",
+    icon: "/favicon.ico",
   },
 };
 
