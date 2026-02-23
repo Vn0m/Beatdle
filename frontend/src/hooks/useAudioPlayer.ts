@@ -12,8 +12,8 @@ export function useAudioPlayer({ previewUrl, duration, onEnded }: UseAudioPlayer
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
-  const timeoutRef = useRef<number | null>(null);
-  const intervalRef = useRef<number | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     return () => {
@@ -35,7 +35,7 @@ export function useAudioPlayer({ previewUrl, duration, onEnded }: UseAudioPlayer
         if (audioRef.current) {
           setCurrentTime(audioRef.current.currentTime);
         }
-      }, 50) as unknown as number;
+      }, 50);
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
@@ -53,6 +53,11 @@ export function useAudioPlayer({ previewUrl, duration, onEnded }: UseAudioPlayer
 
   const play = () => {
     if (!audioRef.current || !previewUrl) return;
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
 
     const audio = audioRef.current;
     audio.currentTime = 0;
@@ -79,6 +84,11 @@ export function useAudioPlayer({ previewUrl, duration, onEnded }: UseAudioPlayer
 
   const playFullSong = () => {
     if (!audioRef.current || !previewUrl) return;
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
 
     const audio = audioRef.current;
     audio.currentTime = 0;
