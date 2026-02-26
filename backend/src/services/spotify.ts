@@ -375,5 +375,5 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
   } catch (err) {
     console.warn("Failed to get custom track, falling back to random:", err);
     return getRandomTrack(exclude);
+    }
   }
-}

@@ -50,7 +50,7 @@ async function startNextRound(lobbyId: string): Promise<void> {
     if (lobby.customSettings) {
       track = await getCustomTrack(lobby.customSettings, lobby.usedTrackIds);
     } else {
-      track = await getRandomTrack();
+    track = await getRandomTrack();
     }
   } catch (err) {
     console.error('Failed to fetch track:', err);
@@ -144,7 +144,7 @@ function handlePlayerGuess(payload: SubmitGuessPayload): void {
   const player = lobby.players.find((p) => p.id === playerId);
   if (!player) return;
 
-  if (player.isCorrect || player.currentAttempt >= 5) return; 
+  if (player.isCorrect || player.currentAttempt >= 5) return;
   player.guesses.push(correct ? 'correct' : 'wrong');
   player.currentAttempt = player.guesses.length;
 
