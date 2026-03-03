@@ -52,7 +52,7 @@ export default function HomePage() {
                 />
                 <div className="absolute top-full mt-1 left-0 right-0 bg-white border-2 border-gray-300 rounded shadow-lg z-20 overflow-hidden">
                   <Link
-                    href="/create-lobby"
+                    href="/multiplayer/create"
                     onClick={() => setShowMultiplayerDropdown(false)}
                     className="block w-full px-4 py-2.5 text-left text-dark hover:bg-gray-50 transition-colors cursor-pointer text-sm font-medium"
                   >
@@ -60,7 +60,7 @@ export default function HomePage() {
                   </Link>
                   <div className="h-px bg-gray-200" />
                   <Link
-                    href="/join-lobby"
+                    href="/multiplayer/join"
                     onClick={() => setShowMultiplayerDropdown(false)}
                     className="block w-full px-4 py-2.5 text-left text-dark hover:bg-gray-50 transition-colors cursor-pointer text-sm font-medium"
                   >
@@ -71,7 +71,7 @@ export default function HomePage() {
             )}
           </div>
 
-          <Link href="/custom-daily" className="w-full sm:w-auto">
+          <Link href="/custom" className="w-full sm:w-auto">
             <Button className="w-full sm:w-48 h-12 text-base font-semibold bg-white text-dark border-2 border-gray-300 rounded hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
               Custom Game
             </Button>
