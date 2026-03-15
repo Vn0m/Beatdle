@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import type { SpotifyTrack } from '@/types';
@@ -51,10 +52,12 @@ export default function ResultModal({
         </Button>
 
         <div className="bg-gray-100 border border-gray-300 rounded p-3 sm:p-4 text-center">
-          <img
+          <Image
             src={track.album.image}
             alt={track.name}
-            className="w-24 h-24 sm:w-28 sm:h-28 mx-auto rounded shadow mb-2 sm:mb-3"
+            width={112}
+            height={112}
+            className="mx-auto rounded shadow mb-2 sm:mb-3"
           />
           <p className="text-base sm:text-lg font-bold text-dark font-sans">{track.name}</p>
           <p className="text-sm sm:text-base text-gray-500 font-sans mt-1">{track.artists.join(', ')}</p>

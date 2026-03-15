@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { HelpCircle, Headphones, Clock, Search, Share2, Menu, X, Music, Award, User, Users, Plus } from 'lucide-react';
 
 function NavMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -86,6 +86,7 @@ export default function AppHeader() {
       <Dialog open={showHowTo} onOpenChange={setShowHowTo}>
         <DialogContent className="max-w-[85vw] sm:max-w-lg bg-white border-2 border-gray-300 text-dark font-sans shadow-lg rounded p-6 sm:p-8">
           <DialogTitle className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-center">How to Play</DialogTitle>
+          <DialogDescription className="sr-only">Instructions for playing Beatdle</DialogDescription>
           <div className="space-y-3 sm:space-y-4">
             <div className="flex gap-3 sm:gap-4 items-center">
               <Headphones className="h-5 w-5 sm:h-6 sm:w-6 text-primary-500 shrink-0" />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { searchTracks } from '@/lib/api';
 import type { TrackSuggestion } from '@/types';
 
@@ -72,7 +73,7 @@ export default function GuessInput({ onSelect, disabled = false }: GuessInputPro
               onClick={() => handleSelect(track)}
             >
               {track.album.image && (
-                <img src={track.album.image} alt={track.name} className="w-12 h-12 rounded shadow-sm" />
+                <Image src={track.album.image} alt={track.name} width={48} height={48} className="rounded shadow-sm" />
               )}
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-dark font-sans truncate">{track.name}</p>
