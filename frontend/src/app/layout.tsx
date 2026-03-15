@@ -33,10 +33,10 @@ export const metadata: Metadata = {
     description: "Test your music knowledge with Beatdle! Listen to audio snippets and guess the song in 5 tries.",
     images: [
       {
-        url: "/Beatdle_Logo.png",
+        url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Beatdle Logo"
+        alt: "Beatdle - Daily Music Guessing Game"
       }
     ]
   },
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Beatdle - Daily Music Guessing Game",
     description: "Test your music knowledge with Beatdle! Listen to audio snippets and guess the song in 5 tries.",
-    images: ["/Beatdle_Logo.png"]
+    images: ["/og-image.png"]
   },
   robots: {
     index: true,
