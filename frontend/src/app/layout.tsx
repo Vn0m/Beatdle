@@ -27,13 +27,13 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "/",
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://beatdle-app.onrender.com',
     siteName: "Beatdle",
     title: "Beatdle - Daily Music Guessing Game",
     description: "Test your music knowledge with Beatdle! Listen to audio snippets and guess the song in 5 tries.",
     images: [
       {
-        url: "/og-image.png",
+        url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://beatdle-app.onrender.com'}/og-image.png`,
         width: 1200,
         height: 630,
         alt: "Beatdle - Daily Music Guessing Game"
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Beatdle - Daily Music Guessing Game",
     description: "Test your music knowledge with Beatdle! Listen to audio snippets and guess the song in 5 tries.",
-    images: ["/og-image.png"]
+    images: [`${process.env.NEXT_PUBLIC_SITE_URL || 'https://beatdle-app.onrender.com'}/og-image.png`]
   },
   robots: {
     index: true,
