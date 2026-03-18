@@ -133,22 +133,38 @@ export async function getTrack(trackId: string){
     }
 }
 
+const SEARCH_GENRES = [
+  'pop', 'rock', 'hip hop', 'r&b', 'soul', 'funk', 'disco', 'country',
+  'indie', 'alternative', 'electronic', 'dance', 'metal', 'punk', 'reggae',
+  'blues', 'jazz', 'classic rock', 'folk', 'latin', 'kpop', 'punk rock',
+];
+
+const SEARCH_DECADES = [
+  { start: 1970, end: 1979 },
+  { start: 1980, end: 1989 },
+  { start: 1990, end: 1999 },
+  { start: 2000, end: 2009 },
+  { start: 2010, end: 2019 },
+  { start: 2020, end: 2026 },
+];
+
 export async function getDailyTrack(userDate?: string){
     const token = await getSpotifyAccessToken();
     if(!token) throw new Error("Unable to get Spotify access token");
 
-    const searchTerms = ['pop', 'hits', 'top', 'billboard', 'viral'];
     const today = userDate || new Date().toISOString().split('T')[0]!;
     const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const searchTerm = searchTerms[seed % searchTerms.length];
-    
-    const url = `https://api.spotify.com/v1/search?q=${searchTerm}&type=track&market=US&limit=50`;
+
+    const genre = SEARCH_GENRES[seed % SEARCH_GENRES.length]!;
+    const decade = SEARCH_DECADES[(seed >> 3) % SEARCH_DECADES.length]!;
+    const offset = ((seed >> 6) % 20) * 5;
+
+    const query = `${genre} year:${decade.start}-${decade.end}`;
+    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&market=US&limit=50&offset=${offset}`;
 
     try{
         const response = await fetch(url, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            },
+            headers: { Authorization: `Bearer ${token}` },
         });
         
         if(!response.ok) {
@@ -163,15 +179,13 @@ export async function getDailyTrack(userDate?: string){
             throw new Error("No tracks returned from search");
         }
         
-        let popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 80);
+        let popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 60);
         
         if (popularTracks.length === 0) {
-            console.warn("No 80+ popularity tracks, trying 60+");
-            popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 70);
+            popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 40);
         }
         
         if (popularTracks.length === 0) {
-            console.warn("No 60+ popularity tracks, using any valid track");
             popularTracks = data.tracks.items.filter((track: any) => track?.id);
         }
 
@@ -182,10 +196,10 @@ export async function getDailyTrack(userDate?: string){
         const index = seed % popularTracks.length;
         const dailyTrack = popularTracks[index];
 
-        return getTrack(dailyTrack.id)
+        return getTrack(dailyTrack.id);
 
     }catch(err){
-        console.error("Error fetching playlist: ", err);
+        console.error("Error fetching daily track: ", err);
         throw err;
     }
 }
@@ -248,12 +262,15 @@ export async function getRandomTrack(exclude: string[] = []) {
   const token = await getSpotifyAccessToken();
   if (!token) throw new Error("Unable to get Spotify access token");
 
-  const searchTerms = ['pop', 'rock', 'hip hop', 'dance', 'electronic', 'indie', 'hits', 'chart'];
-  const randomTerm = searchTerms[Math.floor(Math.random() * searchTerms.length)]!;
-  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(randomTerm)}&type=track&market=US&limit=50`;
+  const genre = SEARCH_GENRES[Math.floor(Math.random() * SEARCH_GENRES.length)]!;
+  const decade = SEARCH_DECADES[Math.floor(Math.random() * SEARCH_DECADES.length)]!;
+  const offset = Math.floor(Math.random() * 20) * 5;
+
+  const query = `${genre} year:${decade.start}-${decade.end}`;
+  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&market=US&limit=50&offset=${offset}`;
 
   try {
-      const response = await fetch(url, {
+    const response = await fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
     if (!response.ok) throw new Error(`Spotify API error ${response.status}`);
@@ -262,7 +279,7 @@ export async function getRandomTrack(exclude: string[] = []) {
     const excludedIds = new Set([...recentTrackIds, ...exclude]);
 
     const validTracks = data.tracks.items
-      .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 70);
+      .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 50);
 
     if (validTracks.length === 0) {
       console.warn("All tracks recently played/excluded, clearing cache...");
@@ -271,12 +288,11 @@ export async function getRandomTrack(exclude: string[] = []) {
     }
 
     const randomTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
-
     addRecentTrack(randomTrack.id);
 
     return getTrack(randomTrack.id);
   } catch (err) {
-    console.warn("Failed to get random track from playlist, falling back:", err);
+    console.warn("Failed to get random track, falling back:", err);
     return getRandomTrack_Fallback();
   }
 }
