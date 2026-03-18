@@ -8,6 +8,7 @@ interface AudioPlayerProps {
   currentTime: number;
   currentAttempt: number;
   gameOver: boolean;
+  disabled?: boolean;
   onPlay: () => void;
   onPause: () => void;
 }
@@ -22,6 +23,7 @@ export default function AudioPlayer({
   currentTime,
   currentAttempt,
   gameOver,
+  disabled = false,
   onPlay,
   onPause,
 }: AudioPlayerProps) {
@@ -40,7 +42,8 @@ export default function AudioPlayer({
 
       <button
         onClick={isPlaying ? onPause : onPlay}
-        className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-md bg-white border-2 border-gray-300 text-primary-500 hover:border-primary-500 hover:shadow-lg active:scale-95 transition-all duration-150 cursor-pointer"
+        disabled={disabled}
+        className="w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-md bg-white border-2 border-gray-300 text-primary-500 hover:border-primary-500 hover:shadow-lg active:scale-95 transition-all duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-gray-300 disabled:hover:shadow-md"
       >
         {isPlaying ? (
           <svg className="w-9 h-9" fill="currentColor" viewBox="0 0 24 24">

@@ -17,17 +17,31 @@ export function useAudioPlayer({ previewUrl, duration, onEnded }: UseAudioPlayer
 
   useEffect(() => {
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (audioRef.current) audioRef.current.pause();
     };
   }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+    audio.load();
+    setIsPlaying(false);
+    setCurrentTime(0);
+  }, [previewUrl]);
 
   useEffect(() => {
     if (isPlaying && audioRef.current) {

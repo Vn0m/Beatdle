@@ -26,6 +26,7 @@ export default function CustomGame() {
   const [showModal, setShowModal] = useState(false);
   const [won, setWon] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
   const [round, setRound] = useState(1);
   const [score, setScore] = useState(0);
@@ -74,6 +75,7 @@ export default function CustomGame() {
 
   const handleNextRound = async () => {
     pause();
+    setIsTransitioning(true);
     setRound(r => r + 1);
     setCurrentAttempt(0);
     setGuesses([]);
@@ -84,6 +86,8 @@ export default function CustomGame() {
       setTrack(data);
     } catch {
       alert('Failed to load next song.');
+    } finally {
+      setIsTransitioning(false);
     }
   };
 
@@ -194,6 +198,7 @@ export default function CustomGame() {
               currentTime={currentTime}
               currentAttempt={currentAttempt}
               gameOver={roundOver}
+              disabled={isTransitioning}
               onPlay={play}
               onPause={pause}
             />
