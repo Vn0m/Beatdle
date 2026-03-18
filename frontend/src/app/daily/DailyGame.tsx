@@ -106,15 +106,7 @@ export default function DailyGame() {
   const getYearFromDate = (d: string) => new Date(d).getFullYear().toString();
   const getArtistInitial = (artists: string[]) => artists[0]?.[0]?.toUpperCase() || '?';
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-white text-dark font-sans">
-        <div className="text-xl font-medium">Loading today&apos;s song...</div>
-      </div>
-    );
-  }
-
-  if (!track) {
+  if (!track && !loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white text-dark font-sans">
         <div className="text-xl font-medium">Failed to load song. Please try again.</div>
@@ -130,20 +122,21 @@ export default function DailyGame() {
           <div className="w-full max-w-lg mx-auto">
             <div className="w-full bg-white flex flex-col items-center">
               <AudioPlayer
-                trackId={track.id}
-                previewUrl={track.previewUrl}
+                trackId={track?.id ?? 'loading'}
+                previewUrl={track?.previewUrl ?? null}
                 audioRef={audioRef}
                 isPlaying={isPlaying}
                 currentTime={currentTime}
                 currentAttempt={currentAttempt}
                 gameOver={gameOver}
+                disabled={loading}
                 onPlay={play}
                 onPause={pause}
               />
 
               {!gameOver && (
                 <div className="w-full max-w-md mb-8">
-                  <GuessInput onSelect={handleGuess} disabled={gameOver} />
+                  <GuessInput onSelect={handleGuess} disabled={gameOver || loading} />
                   <p className="text-sm text-gray-500 mt-3 text-center font-sans">
                     Attempt <span className="font-semibold text-dark">{currentAttempt + 1}</span> of{' '}
                     <span className="font-semibold text-dark">{MAX_ATTEMPTS}</span> ·{' '}
@@ -159,7 +152,7 @@ export default function DailyGame() {
                       {showHints ? 'Hide Hints' : 'Need a hint?'}
                     </button>
 
-                    {showHints && (
+                    {showHints && track && (
                       <div className="mt-3 flex gap-2 flex-wrap sm:flex-nowrap">
                         <HintButton
                           label="Reveal Year"
@@ -196,16 +189,18 @@ export default function DailyGame() {
 
               <GuessGrid guesses={guesses} maxAttempts={MAX_ATTEMPTS} />
 
-              <ResultModal
-                open={showModal}
-                onOpenChange={setShowModal}
-                won={won}
-                guesses={guesses}
-                maxAttempts={MAX_ATTEMPTS}
-                track={track}
-                onShare={handleShare}
-                copied={copied}
-              />
+              {track && (
+                <ResultModal
+                  open={showModal}
+                  onOpenChange={setShowModal}
+                  won={won}
+                  guesses={guesses}
+                  maxAttempts={MAX_ATTEMPTS}
+                  track={track}
+                  onShare={handleShare}
+                  copied={copied}
+                />
+              )}
             </div>
           </div>
         </div>
