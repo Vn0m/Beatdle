@@ -179,10 +179,10 @@ export async function getDailyTrack(userDate?: string){
             throw new Error("No tracks returned from search");
         }
         
-        let popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 60);
+        let popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 70);
         
         if (popularTracks.length === 0) {
-            popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 40);
+            popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 55);
         }
         
         if (popularTracks.length === 0) {
@@ -279,7 +279,7 @@ export async function getRandomTrack(exclude: string[] = []) {
     const excludedIds = new Set([...recentTrackIds, ...exclude]);
 
     const validTracks = data.tracks.items
-      .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 50);
+      .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 65);
 
     if (validTracks.length === 0) {
       console.warn("All tracks recently played/excluded, clearing cache...");
@@ -370,7 +370,7 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
           );
           return artistMatch;
         }
-        return track.popularity >= 60;
+        return track.popularity >= 65;
       });
 
     if (validTracks.length === 0) {
