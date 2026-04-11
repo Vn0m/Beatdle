@@ -179,14 +179,14 @@ export async function getDailyTrack(userDate?: string){
             throw new Error("No tracks returned from search");
         }
         
-        let popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 70);
+        let popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 70 && isBaseVersion(track.name));
         
         if (popularTracks.length === 0) {
-            popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 55);
+            popularTracks = data.tracks.items.filter((track: any) => track?.id && track?.popularity >= 55 && isBaseVersion(track.name));
         }
         
         if (popularTracks.length === 0) {
-            popularTracks = data.tracks.items.filter((track: any) => track?.id);
+            popularTracks = data.tracks.items.filter((track: any) => track?.id && isBaseVersion(track.name));
         }
 
         if (popularTracks.length === 0){
@@ -196,6 +196,7 @@ export async function getDailyTrack(userDate?: string){
         const index = seed % popularTracks.length;
         const dailyTrack = popularTracks[index];
 
+        addRecentTrack(dailyTrack.id);
         return getTrack(dailyTrack.id);
 
     }catch(err){
@@ -245,7 +246,22 @@ export async function searchTracks(query: string, limit: number = 5) {
     }
 }
 
-const MAX_RECENT_TRACKS = 20;
+const VERSION_SUFFIXES = [
+  /\(remaster/i, /\(live/i, /\(radio edit/i, /\(single version/i,
+  /\(album version/i, /\(lp version/i, /\(deluxe/i, /\(acoustic/i,
+  /\(demo/i, /\(edit\)/i, /\(anniversary/i, /\(mono/i, /\(stereo/i,
+  /\(bonus track/i, /\(\d{4}\s+mix\)/i,
+  /\[remaster/i, /\[live/i, /\[\d{4}\s+mix\]/i,
+  /- remaster/i, /- \d{4}\s+mix/i, /- \d{4}\s+remaster/i,
+  /- live/i, /- radio edit/i, /- acoustic/i, /- mono/i, /- stereo/i,
+  /- demo/i, /- bonus track/i, /- deluxe/i, /- edit$/i,
+];
+
+function isBaseVersion(trackName: string): boolean {
+  return !VERSION_SUFFIXES.some(p => p.test(trackName));
+}
+
+const MAX_RECENT_TRACKS = 10;
 const recentTrackIds = new Set<string>();
 
 function addRecentTrack(trackId: string) {
@@ -278,13 +294,27 @@ export async function getRandomTrack(exclude: string[] = []) {
 
     const excludedIds = new Set([...recentTrackIds, ...exclude]);
 
-    const validTracks = data.tracks.items
-      .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 65);
+    let validTracks = data.tracks.items
+      .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 65 && isBaseVersion(track.name));
 
     if (validTracks.length === 0) {
-      console.warn("All tracks recently played/excluded, clearing cache...");
+      validTracks = data.tracks.items
+        .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 50 && isBaseVersion(track.name));
+    }
+
+    if (validTracks.length === 0) {
+      validTracks = data.tracks.items
+        .filter((track: any) => track?.id && !excludedIds.has(track.id) && isBaseVersion(track.name));
+    }
+
+    if (validTracks.length === 0) {
       recentTrackIds.clear();
-      return getRandomTrack_Fallback();
+      validTracks = data.tracks.items
+        .filter((track: any) => track?.id && isBaseVersion(track.name));
+    }
+
+    if (validTracks.length === 0) {
+      throw new Error("No valid tracks found");
     }
 
     const randomTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
@@ -292,33 +322,86 @@ export async function getRandomTrack(exclude: string[] = []) {
 
     return getTrack(randomTrack.id);
   } catch (err) {
-    console.warn("Failed to get random track, falling back:", err);
-    return getRandomTrack_Fallback();
+    console.warn("Failed to get random track, retrying with new search:", err);
+    return getRandomTrack_Retry(exclude);
   }
 }
 
-async function getRandomTrack_Fallback() {
-    console.warn("Fallback random track called...");
+async function getRandomTrack_Retry(exclude: string[] = []) {
     const token = await getSpotifyAccessToken();
     if (!token) throw new Error("Unable to get Spotify access token");
-  
-    const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
-    const url = `https://api.spotify.com/v1/search?q=${randomChar}&type=track&limit=1&market=US`;
-  
+
+    const genre = SEARCH_GENRES[Math.floor(Math.random() * SEARCH_GENRES.length)]!;
+    const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(genre)}&type=track&limit=50&market=US`;
+
     try {
       const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` }});
       if (!response.ok) throw new Error(`Spotify API error ${response.status}`);
       const data = await response.json();
-  
-      const track = data.tracks.items[0];
-      if (!track) throw new Error("No track found in fallback");
-  
+
+      const validTracks = data.tracks.items
+        .filter((track: any) => track?.id && track.popularity >= 50 && isBaseVersion(track.name));
+
+      const track = validTracks.length > 0
+        ? validTracks[Math.floor(Math.random() * validTracks.length)]
+        : data.tracks.items[0];
+
+      if (!track) throw new Error("No track found in retry");
+
+      addRecentTrack(track.id);
       return getTrack(track.id);
     } catch (err) {
-      console.error("Fallback track fetch failed:", err);
+      console.error("Retry track fetch failed:", err);
       throw err;
     }
   }
+
+async function getArtistTracks(artistName: string, token: string): Promise<any[]> {
+  try {
+    const searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(artistName)}&type=artist&limit=5&market=US`;
+    const searchResp = await fetch(searchUrl, { headers: { Authorization: `Bearer ${token}` } });
+    if (!searchResp.ok) return [];
+    const searchData = await searchResp.json();
+
+    const artist = searchData.artists?.items?.find((a: any) =>
+      a.name.toLowerCase() === artistName.toLowerCase()
+    ) || searchData.artists?.items?.[0];
+    if (!artist) return [];
+
+    const topUrl = `https://api.spotify.com/v1/artists/${artist.id}/top-tracks?market=US`;
+    const topResp = await fetch(topUrl, { headers: { Authorization: `Bearer ${token}` } });
+    const topTracks = topResp.ok ? (await topResp.json()).tracks || [] : [];
+
+    const albumsUrl = `https://api.spotify.com/v1/artists/${artist.id}/albums?include_groups=album,single&market=US&limit=50`;
+    const albumsResp = await fetch(albumsUrl, { headers: { Authorization: `Bearer ${token}` } });
+    if (!albumsResp.ok) return topTracks;
+    const albumsData = await albumsResp.json();
+    const albumIds = (albumsData.items || []).map((a: any) => a.id);
+    if (albumIds.length === 0) return topTracks;
+
+    const shuffled = albumIds.sort(() => Math.random() - 0.5).slice(0, 20);
+    const batchUrl = `https://api.spotify.com/v1/albums?ids=${shuffled.join(',')}&market=US`;
+    const batchResp = await fetch(batchUrl, { headers: { Authorization: `Bearer ${token}` } });
+    if (!batchResp.ok) return topTracks;
+    const batchData = await batchResp.json();
+
+    const albumTracks = (batchData.albums || []).flatMap((album: any) =>
+      (album.tracks?.items || []).map((t: any) => ({
+        ...t,
+        album: { name: album.name, images: album.images },
+        popularity: t.popularity ?? 0,
+      }))
+    );
+
+    const allById = new Map<string, any>();
+    for (const t of [...topTracks, ...albumTracks]) {
+      if (t?.id) allById.set(t.id, t);
+    }
+    return Array.from(allById.values());
+  } catch {
+    return [];
+  }
+}
 
 export async function getCustomTrack(settings?: { genre?: string; artist?: string; decadeStart?: number; decadeEnd?: number }, exclude: string[] = []) {
   const token = await getSpotifyAccessToken();
@@ -346,7 +429,8 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
   }
 
   const query = queryParts.join(' ');
-  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&market=US&limit=50`;
+  const offset = Math.floor(Math.random() * 10) * 5;
+  const url = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=track&market=US&limit=50&offset=${offset}`;
 
   try {
     const response = await fetch(url, {
@@ -361,25 +445,69 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
 
     const excludedIds = new Set([...recentTrackIds, ...exclude]);
 
-    let validTracks = data.tracks.items
-      .filter((track: any) => {
-        if (!track?.id || excludedIds.has(track.id)) return false;
-        if (settings?.artist) {
-          const artistMatch = track.artists.some((a: any) => 
-            a.name.toLowerCase().includes(settings.artist!.toLowerCase())
-          );
-          return artistMatch;
+    const filterTrack = (track: any, artistInput: string) => {
+      const input = artistInput.toLowerCase();
+      return track.artists.some((a: any) => a.name.toLowerCase() === input);
+    };
+
+    let validTracks: any[] = [];
+
+    if (settings?.artist) {
+      const artistTracks = await getArtistTracks(settings.artist, token);
+
+      const popularTracks: any[] = [];
+      const deepCuts: any[] = [];     
+      const seenIds = new Set<string>();
+
+      for (const t of [...artistTracks, ...data.tracks.items]) {
+        if (!t?.id || seenIds.has(t.id)) continue;
+        seenIds.add(t.id);
+        if (!isBaseVersion(t.name) || !filterTrack(t, settings.artist!)) continue;
+        if (t.popularity !== undefined && t.popularity > 0) {
+          popularTracks.push(t);
+        } else {
+          deepCuts.push(t);
         }
-        return track.popularity >= 65;
-      });
+      }
+
+      popularTracks.sort((a: any, b: any) => (b.popularity || 0) - (a.popularity || 0));
+
+      const freshPopular = popularTracks.filter((t: any) => !excludedIds.has(t.id));
+      const freshDeep = deepCuts.filter((t: any) => !excludedIds.has(t.id));
+
+      const useDeepCut = freshDeep.length > 0 && Math.random() < 0.3;
+
+      if (useDeepCut) {
+        validTracks = freshDeep;
+      } else if (freshPopular.length > 0) {
+        validTracks = freshPopular;
+      } else if (freshDeep.length > 0) {
+        validTracks = freshDeep;
+      } else if (popularTracks.length > 0) {
+        validTracks = popularTracks;
+      } else {
+        validTracks = deepCuts;
+      }
+    } else {
+      validTracks = data.tracks.items
+        .filter((track: any) => {
+          if (!track?.id || excludedIds.has(track.id)) return false;
+          return track.popularity >= 65 && isBaseVersion(track.name);
+        });
+
+      if (validTracks.length === 0) {
+        validTracks = data.tracks.items
+          .filter((track: any) => track?.id && !excludedIds.has(track.id) && track.popularity >= 40 && isBaseVersion(track.name));
+      }
+
+      if (validTracks.length === 0) {
+        validTracks = data.tracks.items
+          .filter((track: any) => track?.id && !excludedIds.has(track.id) && isBaseVersion(track.name));
+      }
+    }
 
     if (validTracks.length === 0) {
-      validTracks = data.tracks.items
-        .filter((track: any) => track?.id && !excludedIds.has(track.id));
-      
-      if (validTracks.length === 0) {
-        return getRandomTrack(exclude);
-      }
+      return getRandomTrack(exclude);
     }
 
     const randomTrack = validTracks[Math.floor(Math.random() * validTracks.length)];
