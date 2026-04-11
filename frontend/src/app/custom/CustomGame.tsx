@@ -11,6 +11,7 @@ import FilterSelector from '@/components/game/FilterSelector';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { fetchCustomTrack } from '@/lib/api';
+import { isFuzzyTitleMatch } from '@/lib/normalizeTitle';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { MAX_ATTEMPTS, SNIPPET_DURATIONS, MAX_CUSTOM_ROUNDS, CUSTOM_SCORE_POINTS } from '@/config/constants';
 import type { SpotifyTrack, TrackSuggestion, GameFilters } from '@/types';
@@ -52,7 +53,10 @@ export default function CustomGame() {
 
   const handleGuess = (selectedTrack: TrackSuggestion) => {
     if (roundOver || !track) return;
-    const isCorrect = selectedTrack.id === track.id;
+    const isCorrect = selectedTrack.id === track.id || (
+      isFuzzyTitleMatch(selectedTrack.name, track.name) &&
+      selectedTrack.artists.some(a => track.artists.some(ta => ta.toLowerCase() === a.toLowerCase()))
+    );
     const newGuesses = [...guesses, { correct: isCorrect, guess: `${selectedTrack.name} - ${selectedTrack.artists.join(', ')}` }];
     setGuesses(newGuesses);
 

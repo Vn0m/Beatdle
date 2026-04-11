@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/compone
 import { Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
+import { isFuzzyTitleMatch } from '@/lib/normalizeTitle';
 import type { TrackSuggestion, GameFilters } from '@/types';
 import { MAX_ATTEMPTS, MAX_ROUNDS, SNIPPET_DURATIONS } from '@/config/constants';
 
@@ -50,7 +51,10 @@ function MultiplayerLobbyContent({ lobbyId }: { lobbyId: string }) {
 
   function onGuess(selected: TrackSuggestion) {
     if (!me || !track || roundOver) return;
-    const correct = selected.id === track.id;
+    const correct = selected.id === track.id || (
+      isFuzzyTitleMatch(selected.name, track.name) &&
+      selected.artists.some(a => track.artists.some(ta => ta.toLowerCase() === a.toLowerCase()))
+    );
     submitGuess(correct);
   }
 

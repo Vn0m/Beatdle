@@ -10,6 +10,7 @@ import ResultModal from '@/components/game/ResultModal';
 import HintButton from '@/components/game/HintButton';
 import { Button } from '@/components/ui/button';
 import { fetchDailySong } from '@/lib/api';
+import { isFuzzyTitleMatch } from '@/lib/normalizeTitle';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { MAX_ATTEMPTS, SNIPPET_DURATIONS } from '@/config/constants';
 import type { SpotifyTrack, TrackSuggestion, HintState } from '@/types';
@@ -63,7 +64,10 @@ export default function DailyGame() {
 
   const handleGuess = (selectedTrack: TrackSuggestion) => {
     if (gameOver || !track) return;
-    const isCorrect = selectedTrack.id === track.id;
+    const isCorrect = selectedTrack.id === track.id || (
+      isFuzzyTitleMatch(selectedTrack.name, track.name) &&
+      selectedTrack.artists.some(a => track.artists.some(ta => ta.toLowerCase() === a.toLowerCase()))
+    );
     setGuesses([...guesses, { correct: isCorrect, guess: `${selectedTrack.name} - ${selectedTrack.artists.join(', ')}` }]);
 
     if (isCorrect) {
