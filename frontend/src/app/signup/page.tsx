@@ -18,29 +18,49 @@ function GoogleIcon({ className }: { className?: string }) {
   )
 }
 
-export default function LoginPage() {
+export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [username, setUsername] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) {
-      setError(error.message)
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { username } },
+    })
+
+    if (signUpError) {
+      setError(signUpError.message)
       setLoading(false)
-    } else {
-      router.push('/')
-      router.refresh()
+      return
     }
+
+    if (data.user) {
+      const { error: insertError } = await supabase
+        .from('users')
+        .upsert({ id: data.user.id, username })
+
+      if (insertError && insertError.code !== '23505') {
+        setError('Account created but profile setup failed. Please try logging in.')
+        setLoading(false)
+        return
+      }
+    }
+
+    router.push('/')
+    router.refresh()
   }
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSignup = async () => {
     const supabase = createClient()
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -54,9 +74,19 @@ export default function LoginPage() {
         <div className="flex justify-center mb-6">
           <Image src="/Beatdle_Logo.png" alt="Beatdle" width={56} height={56} />
         </div>
-        <h1 className="text-3xl font-bold font-serif text-center mb-8">Log in</h1>
+        <h1 className="text-3xl font-bold font-serif text-center mb-8">Sign up</h1>
 
-        <form onSubmit={handleEmailLogin} className="flex flex-col gap-3 mb-4">
+        <form onSubmit={handleSignup} className="flex flex-col gap-3 mb-4">
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-500"
+            required
+            minLength={3}
+            maxLength={20}
+          />
           <input
             type="email"
             placeholder="Email"
@@ -67,15 +97,16 @@ export default function LoginPage() {
           />
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Password (min 6 characters)"
             value={password}
             onChange={e => setPassword(e.target.value)}
             className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-500"
             required
+            minLength={6}
           />
           {error && <p className="text-red-500 text-sm">{error}</p>}
           <Button type="submit" disabled={loading} className="w-full h-10 bg-dark hover:bg-gray-600 text-white">
-            {loading ? 'Logging in...' : 'Log in'}
+            {loading ? 'Creating account...' : 'Create account'}
           </Button>
         </form>
 
@@ -86,15 +117,15 @@ export default function LoginPage() {
         </div>
 
         <Button
-          onClick={handleGoogleLogin}
+          onClick={handleGoogleSignup}
           className="w-full h-10 bg-white text-dark border-2 border-gray-300 hover:bg-gray-50"
         >
           <GoogleIcon className="w-4 h-4 mr-2" /> Continue with Google
         </Button>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-dark font-semibold hover:underline">Sign up</Link>
+          Already have an account?{' '}
+          <Link href="/login" className="text-dark font-semibold hover:underline">Log in</Link>
         </p>
       </div>
     </div>
