@@ -1,15 +1,25 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import AppHeader from '@/components/layout/AppHeader';
 import Footer from '@/components/layout/Footer';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CreateLobbyPage() {
   const [name, setName] = useState('');
   const router = useRouter();
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) return null;
 
   const createLobby = () => {
     const trimmedName = name.trim();

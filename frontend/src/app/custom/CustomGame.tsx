@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/context/AuthContext';
+import { hasReachedCustomGameLimit, incrementGuestCustomGames } from '@/lib/guestLimits';
 import AppHeader from '@/components/layout/AppHeader';
 import Footer from '@/components/layout/Footer';
 import AudioPlayer from '@/components/game/AudioPlayer';
@@ -17,6 +19,7 @@ import { MAX_ATTEMPTS, SNIPPET_DURATIONS, MAX_CUSTOM_ROUNDS, CUSTOM_SCORE_POINTS
 import type { SpotifyTrack, TrackSuggestion, GameFilters } from '@/types';
 
 export default function CustomGame() {
+  const { user } = useAuth();
   const [filters, setFilters] = useState<GameFilters>({});
   const [maxRounds, setMaxRounds] = useState(5);
   const [track, setTrack] = useState<SpotifyTrack | null>(null);
@@ -39,6 +42,13 @@ export default function CustomGame() {
   });
 
   const loadCustomTrack = async () => {
+    if (!user && hasReachedCustomGameLimit()) {
+      alert('You\'ve played 3 custom games today. Sign up for unlimited!');
+      return;
+    }
+    if (!user) {
+      incrementGuestCustomGames();
+    }
     try {
       setLoading(true);
       const data = await fetchCustomTrack(filters);

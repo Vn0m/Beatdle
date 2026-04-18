@@ -6,6 +6,7 @@ import { WebSocketServer } from 'ws';
 import userRoutes from './routes/users.js';
 import leaderboardRoutes from './routes/leaderboard.js';
 import spotifyRoutes from './routes/spotify.js';
+import scoresRoutes from './routes/scores.js';
 import { initializeWebSocketServer } from './websocket/handlers.js';
 import { PORT, ALLOWED_ORIGINS } from './constants.js';
 
@@ -33,6 +34,7 @@ app.use(express.json());
 app.use('/api/users', userRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
 app.use('/api/spotify', spotifyRoutes);
+app.use('/api/scores', scoresRoutes);
 
 app.get('/', (req, res) => {
   res.json({ 
