@@ -36,7 +36,7 @@ export default function DailyGame() {
   });
 
   const today = new Date();
-  const todayKey = `beatdle-daily-${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const todayKey = `beatdle-daily-${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}-${String(today.getUTCDate()).padStart(2, '0')}`;
 
   useEffect(() => {
     loadDailySong();
@@ -47,12 +47,14 @@ export default function DailyGame() {
     const savedState = localStorage.getItem(todayKey);
     if (savedState) {
       try {
-        const { guesses: g, gameOver: go, won: w, currentAttempt: ca } = JSON.parse(savedState);
-        setGuesses(g);
-        setGameOver(go);
-        setWon(w);
-        setCurrentAttempt(ca);
-        scoreSavedRef.current = true;
+        const { guesses: g, gameOver: go, won: w, currentAttempt: ca, trackId } = JSON.parse(savedState);
+        if (trackId === track.id) {
+          setGuesses(g);
+          setGameOver(go);
+          setWon(w);
+          setCurrentAttempt(ca);
+          scoreSavedRef.current = true;
+        }
       } catch {}
     }
     const savedHints = localStorage.getItem(`beatdle-hints-${track.id}`);
@@ -92,7 +94,7 @@ export default function DailyGame() {
       setGameOver(true);
       setShowModal(true);
       playFullSong();
-      localStorage.setItem(todayKey, JSON.stringify({ guesses: newGuesses, gameOver: true, won: true, currentAttempt }));
+      localStorage.setItem(todayKey, JSON.stringify({ guesses: newGuesses, gameOver: true, won: true, currentAttempt, trackId: track.id }));
       if (!scoreSavedRef.current) {
         scoreSavedRef.current = true;
         saveScore({ game_type: 'daily', game_date, attempts: currentAttempt + 1, completed: true });
@@ -100,7 +102,7 @@ export default function DailyGame() {
     } else if (currentAttempt + 1 >= MAX_ATTEMPTS) {
       setGameOver(true);
       setShowModal(true);
-      localStorage.setItem(todayKey, JSON.stringify({ guesses: newGuesses, gameOver: true, won: false, currentAttempt: MAX_ATTEMPTS - 1 }));
+      localStorage.setItem(todayKey, JSON.stringify({ guesses: newGuesses, gameOver: true, won: false, currentAttempt: MAX_ATTEMPTS - 1, trackId: track.id }));
       if (!scoreSavedRef.current) {
         scoreSavedRef.current = true;
         saveScore({ game_type: 'daily', game_date, attempts: MAX_ATTEMPTS, completed: false });
