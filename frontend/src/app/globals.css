@@ -44,8 +44,9 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
-  --color-primary-500: #3e5a7a;
-  --color-primary-600: #355166;
+  --color-primary-50: #f6f7f8;
+  --color-primary-500: #1C1C1E;
+  --color-primary-600: #0A0A0A;
   --color-correct: #6aaa64;
   --color-correct-light: #e8f5e6;
   --color-wrong: #dc2626;

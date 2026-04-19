@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
-import { Button } from '@/components/ui/button'
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -50,11 +49,14 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-col min-h-screen items-center justify-center bg-white px-4">
-      <div className="w-full max-w-sm">
-        <div className="flex justify-center mb-6">
-          <Image src="/Beatdle_Logo.png" alt="Beatdle" width={56} height={56} />
+      <div className="w-full max-w-xs">
+        <div className="text-center mb-8">
+          <Link href="/">
+            <Image src="/Beatdle_Logo.png" alt="Beatdle" width={56} height={56} className="mx-auto mb-3 object-contain" />
+          </Link>
+          <Link href="/" className="text-2xl font-bold text-dark" style={{ fontFamily: 'Georgia, Times, serif' }}>Beatdle</Link>
+          <p className="text-gray-400 text-sm mt-1">Log in to track your stats</p>
         </div>
-        <h1 className="text-3xl font-bold font-serif text-center mb-8">Log in</h1>
 
         <form onSubmit={handleEmailLogin} className="flex flex-col gap-3 mb-4">
           <input
@@ -62,7 +64,7 @@ export default function LoginPage() {
             placeholder="Email"
             value={email}
             onChange={e => setEmail(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-500"
+            className="w-full h-11 border border-gray-200 rounded-xl px-4 text-sm focus:outline-none focus:border-[#1C1C1E] transition-colors"
             required
           />
           <input
@@ -70,31 +72,38 @@ export default function LoginPage() {
             placeholder="Password"
             value={password}
             onChange={e => setPassword(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:border-gray-500"
+            className="w-full h-11 border border-gray-200 rounded-xl px-4 text-sm focus:outline-none focus:border-[#1C1C1E] transition-colors"
             required
           />
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <Button type="submit" disabled={loading} className="w-full h-10 bg-dark hover:bg-gray-600 text-white">
-            {loading ? 'Logging in...' : 'Log in'}
-          </Button>
+          {error && <p className="text-red-500 text-xs">{error}</p>}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-11 bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white rounded-full text-sm font-bold transition-colors cursor-pointer disabled:opacity-60"
+          >
+            {loading ? 'Logging in…' : 'Log in'}
+          </button>
         </form>
 
-        <div className="flex items-center gap-2 mb-4">
-          <div className="flex-1 h-px bg-gray-200" />
+        <div className="flex items-center gap-3 my-4">
+          <div className="flex-1 h-px bg-gray-100" />
           <span className="text-xs text-gray-400">or</span>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-gray-100" />
         </div>
 
-        <Button
+        <button
           onClick={handleGoogleLogin}
-          className="w-full h-10 bg-white text-dark border-2 border-gray-300 hover:bg-gray-50"
+          className="w-full h-11 bg-white text-dark border border-gray-200 rounded-full text-sm font-semibold hover:bg-gray-50 transition-colors cursor-pointer flex items-center justify-center gap-2"
         >
-          <GoogleIcon className="w-4 h-4 mr-2" /> Continue with Google
-        </Button>
+          <GoogleIcon className="w-4 h-4" /> Continue with Google
+        </button>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Don&apos;t have an account?{' '}
+        <p className="text-center text-xs text-gray-400 mt-8">
+          No account?{' '}
           <Link href="/signup" className="text-dark font-semibold hover:underline">Sign up</Link>
+        </p>
+        <p className="text-center mt-3">
+          <Link href="/" className="text-xs text-gray-400 hover:text-dark transition-colors">← Back to home</Link>
         </p>
       </div>
     </div>

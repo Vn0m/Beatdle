@@ -41,9 +41,25 @@ router.get('/:id', async (req, res) => {
 
     const statsResult = await query('SELECT * FROM user_stats WHERE user_id = $1', [id]);
 
+    const gameTypeStats = await query(
+      `SELECT game_type,
+              COUNT(*) AS games_played,
+              COUNT(*) FILTER (WHERE completed = true) AS games_won
+       FROM scores WHERE user_id = $1
+       GROUP BY game_type`,
+      [id]
+    );
+
+    const byType: Record<string, { games_played: number; games_won: number }> = {};
+    for (const row of gameTypeStats.rows) {
+      byType[row.game_type] = { games_played: Number(row.games_played), games_won: Number(row.games_won) };
+    }
+
     res.json({
       ...userResult.rows[0],
       stats: statsResult.rows[0] || null,
+      daily: byType['daily'] || null,
+      custom: byType['custom'] || null,
     });
   } catch (err) {
     console.error('Error fetching user profile:', err);

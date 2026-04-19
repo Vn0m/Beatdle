@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AppHeader from '@/components/layout/AppHeader';
 import Footer from '@/components/layout/Footer';
 import AudioPlayer from '@/components/game/AudioPlayer';
@@ -9,7 +9,7 @@ import GuessGrid from '@/components/game/GuessGrid';
 import ResultModal from '@/components/game/ResultModal';
 import HintButton from '@/components/game/HintButton';
 import { Button } from '@/components/ui/button';
-import { fetchDailySong } from '@/lib/api';
+import { fetchDailySong, saveScore } from '@/lib/api';
 import { isFuzzyTitleMatch } from '@/lib/normalizeTitle';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { MAX_ATTEMPTS, SNIPPET_DURATIONS } from '@/config/constants';
@@ -27,6 +27,7 @@ export default function DailyGame() {
   const [copied, setCopied] = useState(false);
   const [usedHints, setUsedHints] = useState<HintState>({ year: false, artist: false, album: false });
   const [showHints, setShowHints] = useState(false);
+  const scoreSavedRef = useRef(false);
 
   const duration = gameOver ? 15 : (SNIPPET_DURATIONS[currentAttempt] || 15);
   const { audioRef, isPlaying, currentTime, play, pause, playFullSong } = useAudioPlayer({
@@ -34,15 +35,29 @@ export default function DailyGame() {
     duration,
   });
 
+  const today = new Date();
+  const todayKey = `beatdle-daily-${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
   useEffect(() => {
     loadDailySong();
   }, []);
 
   useEffect(() => {
     if (!track) return;
-    const saved = localStorage.getItem(`beatdle-hints-${track.id}`);
-    if (saved) {
-      try { setUsedHints(JSON.parse(saved)); } catch {}
+    const savedState = localStorage.getItem(todayKey);
+    if (savedState) {
+      try {
+        const { guesses: g, gameOver: go, won: w, currentAttempt: ca } = JSON.parse(savedState);
+        setGuesses(g);
+        setGameOver(go);
+        setWon(w);
+        setCurrentAttempt(ca);
+        scoreSavedRef.current = true;
+      } catch {}
+    }
+    const savedHints = localStorage.getItem(`beatdle-hints-${track.id}`);
+    if (savedHints) {
+      try { setUsedHints(JSON.parse(savedHints)); } catch {}
     }
   }, [track]);
 
@@ -68,16 +83,28 @@ export default function DailyGame() {
       isFuzzyTitleMatch(selectedTrack.name, track.name) &&
       selectedTrack.artists.some(a => track.artists.some(ta => ta.toLowerCase() === a.toLowerCase()))
     );
-    setGuesses([...guesses, { correct: isCorrect, guess: `${selectedTrack.name} - ${selectedTrack.artists.join(', ')}` }]);
+    const game_date = todayKey.replace('beatdle-daily-', '');
+    const newGuesses = [...guesses, { correct: isCorrect, guess: `${selectedTrack.name} - ${selectedTrack.artists.join(', ')}` }];
+    setGuesses(newGuesses);
 
     if (isCorrect) {
       setWon(true);
       setGameOver(true);
       setShowModal(true);
       playFullSong();
+      localStorage.setItem(todayKey, JSON.stringify({ guesses: newGuesses, gameOver: true, won: true, currentAttempt }));
+      if (!scoreSavedRef.current) {
+        scoreSavedRef.current = true;
+        saveScore({ game_type: 'daily', game_date, attempts: currentAttempt + 1, completed: true });
+      }
     } else if (currentAttempt + 1 >= MAX_ATTEMPTS) {
       setGameOver(true);
       setShowModal(true);
+      localStorage.setItem(todayKey, JSON.stringify({ guesses: newGuesses, gameOver: true, won: false, currentAttempt: MAX_ATTEMPTS - 1 }));
+      if (!scoreSavedRef.current) {
+        scoreSavedRef.current = true;
+        saveScore({ game_type: 'daily', game_date, attempts: MAX_ATTEMPTS, completed: false });
+      }
     } else {
       setCurrentAttempt(currentAttempt + 1);
     }
@@ -150,7 +177,7 @@ export default function DailyGame() {
                   <div className="mt-6">
                     <button
                       onClick={() => setShowHints(!showHints)}
-                      className="w-full py-2 px-4 text-sm font-medium text-gray-600 hover:text-primary-500 transition-colors font-sans cursor-pointer flex items-center justify-center gap-1.5"
+                      className="w-full py-2 px-4 text-sm font-medium text-gray-400 hover:text-[#1C1C1E] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Lightbulb className="w-4 h-4" />
                       {showHints ? 'Hide Hints' : 'Need a hint?'}
@@ -185,7 +212,7 @@ export default function DailyGame() {
               {gameOver && (
                 <Button
                   onClick={() => setShowModal(true)}
-                  className="mb-6 bg-dark hover:bg-gray-600 text-white font-sans font-semibold px-8 py-3 rounded transition-colors cursor-pointer"
+                  className="mb-6 bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white font-semibold px-10 h-11 rounded-full transition-colors cursor-pointer"
                 >
                   View Results
                 </Button>

@@ -16,6 +16,8 @@ import { isFuzzyTitleMatch } from '@/lib/normalizeTitle';
 import type { TrackSuggestion, GameFilters } from '@/types';
 import { MAX_ATTEMPTS, MAX_ROUNDS, SNIPPET_DURATIONS } from '@/config/constants';
 
+const MEDALS = ['🥇', '🥈', '🥉'];
+
 function MultiplayerLobbyContent({ lobbyId }: { lobbyId: string }) {
   const searchParams = useSearchParams();
   const name = searchParams.get('name') || 'Anonymous';
@@ -70,27 +72,28 @@ function MultiplayerLobbyContent({ lobbyId }: { lobbyId: string }) {
 
   function renderScoreboard() {
     return (
-      <div className="w-64 sticky top-4 bg-white border-2 border-gray-300 text-dark rounded shadow overflow-hidden" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
-        <h3 className="text-xl font-semibold p-4 pb-3 text-center text-dark border-b border-gray-200">
-          Players ({players.length})
+      <div className="w-56 sticky top-4 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
+        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-widest px-4 py-3 border-b border-gray-100 text-center">
+          Players
         </h3>
-        <div className="overflow-y-auto p-4" style={{ maxHeight: 'calc(100vh - 24rem)' }}>
-          <ul className="space-y-3">
-            {[...players].sort((a, b) => b.score - a.score).map((p) => (
-              <div
-                key={p.id}
-                className={`p-3 flex flex-col justify-between items-start text-sm bg-white border-2 text-dark rounded ${p.id === myId ? 'border-primary-500' : 'border-gray-300'}`}
-              >
-                <div className="font-bold truncate w-full flex justify-between items-center">
-                  <span>{p.name} {p.isHost && '👑'}</span>
-                  <span className="text-lg text-dark">{p.score}</span>
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {p.isCorrect ? '✅ Correct' : `Attempts: ${p.currentAttempt}/${MAX_ATTEMPTS}`}
-                </div>
+        <div className="overflow-y-auto divide-y divide-gray-100" style={{ maxHeight: 'calc(100vh - 24rem)' }}>
+          {[...players].sort((a, b) => b.score - a.score).map((p, idx) => (
+            <div
+              key={p.id}
+              className={`px-4 py-3 flex justify-between items-center text-sm ${p.id === myId ? 'bg-[#EEF2F8]' : ''}`}
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-gray-400 text-xs w-4">{idx + 1}</span>
+                <span className={`font-semibold truncate ${p.id === myId ? 'text-[#4A6FA5]' : 'text-dark'}`}>
+                  {p.name} {p.isHost && '👑'}
+                </span>
               </div>
-            ))}
-          </ul>
+              <div className="text-right shrink-0 ml-2">
+                <span className="font-bold text-dark">{p.score}</span>
+                {p.isCorrect && <span className="text-xs text-[#1C1C1E] ml-1">✓</span>}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -98,72 +101,73 @@ function MultiplayerLobbyContent({ lobbyId }: { lobbyId: string }) {
 
   function renderLobby() {
     return (
-      <div className="flex flex-col items-center w-full max-w-md mx-auto py-8 px-4">
-        <h2 className="text-2xl font-semibold mb-2 text-center text-dark">Waiting Room</h2>
-        <p className="text-center text-sm mb-8 text-gray-500">
-          {name} {isHost && '· Host'}
+      <div className="flex flex-col items-center w-full max-w-sm mx-auto py-10 px-4">
+        <h2 className="text-2xl font-bold text-center text-dark mb-1" style={{ fontFamily: 'Georgia, Times, serif' }}>
+          Waiting Room
+        </h2>
+        <p className="text-sm text-gray-400 text-center mb-8">
+          Lobby code: <span className="font-bold text-dark tracking-widest">{lobbyId}</span>
+          {isHost && <span className="ml-2 text-[#1C1C1E] font-semibold">· Host</span>}
         </p>
 
         {isHost && (
-          <>
+          <div className="w-full mb-6 space-y-3">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="mb-4 px-4 py-2 text-sm font-medium text-gray-600 hover:text-dark transition-colors cursor-pointer flex items-center gap-2 border-2 border-gray-300 rounded hover:border-gray-400"
+              className="w-full flex items-center justify-between px-4 py-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-dark transition-colors cursor-pointer"
             >
-              <Settings className="w-4 h-4" />
-              <span>Configure Game (Optional)</span>
+              <div className="flex items-center gap-2">
+                <Settings className="w-4 h-4" />
+                <span>Game Filters {hasFilters && <span className="text-[#1C1C1E]">· Active</span>}</span>
+              </div>
               {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
             </button>
 
             {showFilters && (
-              <div className="w-full mb-6">
+              <div className="w-full">
                 <FilterSelector onFiltersChange={setCustomFilters} initialFilters={customFilters} />
               </div>
             )}
 
-            {hasFilters && (
-              <p className="text-xs text-center text-gray-500 mb-3 font-medium">{getFilterDisplay()}</p>
-            )}
-
             <Button
               onClick={() => startGame(hasFilters ? customFilters : undefined)}
-              className="w-full max-w-xs h-12 text-base font-semibold mb-8 bg-dark hover:bg-gray-600 text-white rounded transition-colors cursor-pointer"
+              className="w-full h-11 text-sm font-bold bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white rounded-full transition-colors cursor-pointer"
             >
               Start Game
             </Button>
-          </>
+          </div>
         )}
 
         {!isHost && (
-          <p className="text-sm text-gray-500 mb-8">Waiting for the host to start the game...</p>
+          <p className="text-sm text-gray-400 mb-6 text-center">Waiting for the host to start...</p>
         )}
 
-        <div className="text-sm font-medium text-gray-500 mb-3">Players ({players.length})</div>
-        <div className="w-full max-w-sm max-h-96 overflow-y-auto">
-          <ul className="space-y-2.5">
+        <div className="w-full">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">
+            Players ({players.length})
+          </p>
+          <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden">
             {players.map((p) => (
               <div
                 key={p.id}
-                className={`px-4 py-3.5 flex justify-between items-center rounded transition-all ${
-                  p.id === myId
-                    ? 'bg-primary-50 border-2 border-primary-500'
-                    : 'bg-white border border-gray-200 hover:border-gray-300'
+                className={`px-4 py-3 flex justify-between items-center text-sm ${
+                  p.id === myId ? 'bg-[#EEF2F8]' : 'bg-white'
                 }`}
               >
-                <span className={`font-medium ${p.id === myId ? 'text-dark' : 'text-gray-700'}`}>
+                <span className={`font-semibold ${p.id === myId ? 'text-[#4A6FA5]' : 'text-dark'}`}>
                   {p.name} {p.isHost && '👑'}
                 </span>
-                <span className="text-sm text-gray-500">{p.score} pts</span>
+                <span className="text-xs text-gray-400">{p.score} pts</span>
               </div>
             ))}
-          </ul>
+          </div>
         </div>
       </div>
     );
   }
 
   function renderGame() {
-    if (!track || !me) return <div className="text-center py-12">Loading...</div>;
+    if (!track || !me) return <div className="text-center py-12 text-gray-400 text-sm">Loading...</div>;
     const minutes = Math.floor(timeLeft / 60);
     const seconds = timeLeft % 60;
     const meAttempt = me.currentAttempt;
@@ -181,38 +185,39 @@ function MultiplayerLobbyContent({ lobbyId }: { lobbyId: string }) {
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_40rem_1fr] gap-8">
           <div className="hidden lg:block" />
 
-          <div className="w-full max-w-2xl mx-auto flex flex-col items-center mt-12 lg:mt-16">
+          <div className="w-full max-w-2xl mx-auto flex flex-col items-center mt-10">
             {track.previewUrl && <audio ref={audioRef} src={track.previewUrl} />}
 
-            <div className="w-full flex justify-between mb-6">
-              <div className="bg-white border-2 border-gray-300 px-3 py-1 rounded text-gray-500 font-bold shadow">
-                Timer: {minutes}:{seconds.toString().padStart(2, '0')}
+            <div className="w-full flex justify-between items-center mb-6">
+              <div className="text-sm font-semibold text-gray-400">
+                <span className="text-dark font-bold">{minutes}:{seconds.toString().padStart(2, '0')}</span>
+                <span className="ml-1">left</span>
               </div>
-              <div className="bg-white border-2 border-gray-300 px-3 py-1 rounded text-gray-500 font-bold shadow">
-                Round: {round} / {MAX_ROUNDS}
+              <div className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+                Round {round} / {MAX_ROUNDS}
               </div>
             </div>
 
             <button
               onClick={play}
               disabled={isPlaying || won || roundOver || me.currentAttempt >= MAX_ATTEMPTS}
-              className={`w-24 h-24 rounded-full flex items-center justify-center mb-6 shadow-md bg-white border-2 border-gray-300 text-primary-500 hover:border-primary-500 hover:shadow-lg active:scale-95 transition-all duration-150 ${
-                isPlaying || won || roundOver || me.currentAttempt >= MAX_ATTEMPTS ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+              className={`w-20 h-20 rounded-full flex items-center justify-center mb-6 shadow-sm bg-white border-2 border-gray-200 text-[#1C1C1E] hover:border-[#1C1C1E] hover:shadow-md active:scale-95 transition-all duration-150 ${
+                isPlaying || won || roundOver || me.currentAttempt >= MAX_ATTEMPTS ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
               }`}
             >
               {isPlaying ? (
-                <svg className="w-11 h-11" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-9 h-9" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                 </svg>
               ) : (
-                <svg className="w-11 h-11 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-9 h-9 ml-1" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
               )}
             </button>
 
             <div className="relative w-full max-w-md mx-auto mb-8">
-              <div className="flex gap-0.5 h-16 items-end">
+              <div className="flex gap-0.5 h-14 items-end">
                 {[...Array(40)].map((_, i) => {
                   const isUnlocked = i < (currentUnlockedDuration / 15) * 40;
                   const wave1 = Math.sin(i * freq1 + offset1) * 0.4;
@@ -225,7 +230,7 @@ function MultiplayerLobbyContent({ lobbyId }: { lobbyId: string }) {
                     <div
                       key={i}
                       className={`flex-1 rounded-sm ${
-                        !isUnlocked ? 'bg-gray-200' : hasPlayed ? 'bg-primary-600' : 'bg-primary-500'
+                        !isUnlocked ? 'bg-gray-200' : hasPlayed ? 'bg-[#0A0A0A]' : 'bg-[#1C1C1E]'
                       } ${isPlaying && isUnlocked ? 'animate-wave-pulse' : ''}`}
                       style={{
                         height: `${heightPercent}%`,
@@ -244,15 +249,15 @@ function MultiplayerLobbyContent({ lobbyId }: { lobbyId: string }) {
               </div>
             )}
 
-            <div className="flex gap-3 mb-6">
+            <div className="flex gap-2.5 mb-6">
               {Array.from({ length: MAX_ATTEMPTS }).map((_, i) => {
                 const guess = me.guesses[i];
-                let boxClass = 'bg-white border-gray-300';
-                if (guess === 'correct') boxClass = 'bg-correct-light border-correct';
-                else if (guess === 'wrong') boxClass = 'bg-wrong-light border-wrong';
-                if (i === me.currentAttempt && !won && !roundOver) boxClass = 'border-2 border-primary-500 bg-white';
+                let boxClass = 'bg-white border-gray-200 text-gray-300';
+                if (guess === 'correct') boxClass = 'bg-[#f6f7f8] border-[#1C1C1E] text-[#1C1C1E]';
+                else if (guess === 'wrong') boxClass = 'bg-[#fee2e2] border-red-400 text-red-400';
+                if (i === me.currentAttempt && !won && !roundOver) boxClass = 'border-[#1C1C1E] bg-white text-[#1C1C1E]';
                 return (
-                  <div key={i} className={`w-16 h-16 border-2 rounded flex items-center justify-center text-lg font-bold shadow ${boxClass}`}>
+                  <div key={i} className={`w-14 h-14 border-2 rounded-xl flex items-center justify-center text-sm font-bold ${boxClass}`}>
                     {i + 1}
                   </div>
                 );
@@ -260,22 +265,22 @@ function MultiplayerLobbyContent({ lobbyId }: { lobbyId: string }) {
             </div>
 
             {(won || roundOver) && (
-              <div className="text-center mt-4 mb-4">
-                <p className="text-xl font-bold text-dark">Answer: {track.name}</p>
-                <p className="text-lg text-gray-500">{track.artists.join(', ')}</p>
+              <div className="text-center mt-2 mb-5">
+                <p className="text-lg font-bold text-dark">{track.name}</p>
+                <p className="text-sm text-gray-500 mt-0.5">{track.artists.join(', ')}</p>
               </div>
             )}
 
             {!roundOver && (won || me.currentAttempt >= MAX_ATTEMPTS) && (
-              <p className="text-sm text-gray-500 mt-4 text-center">Waiting for other players...</p>
+              <p className="text-sm text-gray-400 mt-2 text-center">Waiting for other players...</p>
             )}
 
             {roundOver && round < MAX_ROUNDS && isHost && (
               <Button
                 onClick={nextRound}
-                className="mt-6 px-6 py-3 font-bold bg-dark hover:bg-gray-600 text-white rounded transition-colors cursor-pointer"
+                className="mt-4 h-11 px-8 font-bold bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white rounded-full transition-colors cursor-pointer"
               >
-                Next Song
+                Next Song →
               </Button>
             )}
           </div>
@@ -289,54 +294,39 @@ function MultiplayerLobbyContent({ lobbyId }: { lobbyId: string }) {
   return (
     <div className="flex flex-col min-h-screen bg-white text-dark font-sans">
       <AppHeader />
-      <header className="flex items-center p-4 bg-white border-b border-gray-200 relative">
-        <Link href="/" className="p-2 rounded hover:bg-gray-100 absolute left-4 transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-dark" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-          </svg>
-        </Link>
-        <div className="grow text-center">
-          <div className="inline-block bg-white border-2 border-gray-300 px-6 py-2 rounded text-xl font-bold shadow uppercase tracking-wide">
-            Lobby: {lobbyId}
-          </div>
-        </div>
-      </header>
 
       <main className="flex flex-col items-center grow">
         {error && (
-          <div className="bg-red-50 border-2 border-red-400 text-red-700 px-4 py-3 rounded m-4 font-sans">{error}</div>
+          <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-xl m-4">{error}</div>
         )}
         {gameStarted ? renderGame() : renderLobby()}
       </main>
 
       <Dialog open={gameOver} onOpenChange={() => {}}>
-        <DialogContent className="max-w-[85vw] sm:max-w-md max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-[85vw] sm:max-w-sm bg-white border border-gray-200 text-dark font-sans shadow-xl rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogTitle className="sr-only">Game Complete</DialogTitle>
           <DialogDescription className="sr-only">Final scores and rankings</DialogDescription>
-          <div className="text-center py-4 px-2">
+          <div className="text-center">
             <div className="text-4xl mb-3">🏆</div>
-            <h2 className="text-2xl font-bold text-dark mb-6">Game Complete</h2>
-            <div className="space-y-2 mb-8">
+            <h2 className="text-xl font-bold text-dark mb-5" style={{ fontFamily: 'Georgia, Times, serif' }}>Game Over</h2>
+            <div className="divide-y divide-gray-100 border border-gray-100 rounded-2xl overflow-hidden mb-6">
               {[...players]
                 .sort((a, b) => b.score - a.score)
                 .map((p, idx) => (
                   <div
                     key={p.id}
-                    className={`py-3 px-4 rounded flex justify-between items-center ${
-                      idx === 0 ? 'bg-gray-100 border border-gray-300' : 'bg-gray-50'
-                    }`}
+                    className={`py-3 px-4 flex justify-between items-center text-sm ${idx === 0 ? 'bg-[#f6f7f8]' : 'bg-white'}`}
                   >
-                    <span className={`font-medium ${idx === 0 ? 'text-dark font-bold' : 'text-gray-700'}`}>
-                      {idx === 0 && '👑 '}{p.name}
-                    </span>
-                    <span className={`font-semibold ${idx === 0 ? 'text-dark' : 'text-gray-600'}`}>
-                      {p.score} pts
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span>{idx < 3 ? MEDALS[idx] : <span className="text-gray-400 text-xs w-5 inline-block">{idx + 1}</span>}</span>
+                      <span className={`font-semibold ${idx === 0 ? 'text-dark' : 'text-gray-700'}`}>{p.name}</span>
+                    </div>
+                    <span className={`font-bold ${idx === 0 ? 'text-[#1C1C1E]' : 'text-gray-500'}`}>{p.score} pts</span>
                   </div>
                 ))}
             </div>
             <Link href="/">
-              <Button className="w-full py-3 font-semibold bg-dark hover:bg-gray-600 text-white rounded transition-colors cursor-pointer">
+              <Button className="w-full h-11 font-semibold text-sm bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white rounded-full transition-colors cursor-pointer">
                 Back to Home
               </Button>
             </Link>
@@ -350,7 +340,7 @@ function MultiplayerLobbyContent({ lobbyId }: { lobbyId: string }) {
 export default function MultiplayerLobbyPage({ params }: { params: Promise<{ lobbyId: string }> }) {
   const { lobbyId } = use(params);
   return (
-    <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen text-gray-400 text-sm">Loading...</div>}>
       <MultiplayerLobbyContent lobbyId={lobbyId} />
     </Suspense>
   );

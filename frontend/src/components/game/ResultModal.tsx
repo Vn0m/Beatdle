@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { Share2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import type { SpotifyTrack } from '@/types';
@@ -27,7 +28,7 @@ export default function ResultModal({
 }: ResultModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[85vw] sm:max-w-md bg-white border-2 border-gray-300 text-dark font-sans shadow-lg rounded">
+      <DialogContent className="max-w-[85vw] sm:max-w-sm bg-white border border-gray-200 text-dark font-sans shadow-xl rounded-2xl p-6">
         <DialogTitle className="sr-only">
           {won ? 'Congratulations!' : 'Game Over'}
         </DialogTitle>
@@ -37,32 +38,33 @@ export default function ResultModal({
             : 'You did not guess the song correctly'}
         </DialogDescription>
 
-        <div className="text-4xl sm:text-5xl mb-3 text-center">{won ? '🎉' : '😔'}</div>
-        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-center text-dark font-sans">
+        <div className="text-4xl mb-3 text-center">{won ? '🎉' : '😔'}</div>
+        <h2 className="text-lg font-bold mb-1 text-center text-dark" style={{ fontFamily: 'Georgia, Times, serif' }}>
           {won
-            ? `You got it in ${guesses.length} ${guesses.length === 1 ? 'try' : 'tries'}!`
-            : 'Better luck next time!'}
+            ? `Got it in ${guesses.length} ${guesses.length === 1 ? 'try' : 'tries'}!`
+            : 'Better luck tomorrow!'}
         </h2>
 
-        <Button
-          onClick={onShare}
-          className={`mb-4 sm:mb-6 w-full text-white bg-correct hover:bg-green-700 font-sans font-semibold py-2.5 sm:py-3 text-sm sm:text-base rounded transition-all duration-150 cursor-pointer ${copied ? 'opacity-75' : ''}`}
-        >
-          {copied ? 'Copied to Clipboard!' : 'Share Results'}
-        </Button>
-
-        <div className="bg-gray-100 border border-gray-300 rounded p-3 sm:p-4 text-center">
+        <div className="flex flex-col items-center my-5 bg-gray-50 rounded-2xl p-4">
           <Image
             src={track.album.image}
             alt={track.name}
-            width={112}
-            height={112}
-            className="mx-auto rounded shadow mb-2 sm:mb-3"
+            width={96}
+            height={96}
+            className="rounded-xl shadow-sm mb-3"
           />
-          <p className="text-base sm:text-lg font-bold text-dark font-sans">{track.name}</p>
-          <p className="text-sm sm:text-base text-gray-500 font-sans mt-1">{track.artists.join(', ')}</p>
-          <p className="text-xs sm:text-sm text-gray-400 font-sans mt-1">{track.album.name}</p>
+          <p className="text-base font-bold text-dark text-center">{track.name}</p>
+          <p className="text-sm text-gray-500 mt-0.5 text-center">{track.artists.join(', ')}</p>
+          <p className="text-xs text-gray-400 mt-0.5 text-center">{track.album.name}</p>
         </div>
+
+        <Button
+          onClick={onShare}
+          className={`w-full h-11 text-white bg-[#1C1C1E] hover:bg-[#0A0A0A] font-semibold text-sm rounded-full transition-all cursor-pointer ${copied ? 'opacity-75' : ''}`}
+        >
+          <Share2 className="w-4 h-4 mr-2" />
+          {copied ? 'Copied!' : 'Share Results'}
+        </Button>
       </DialogContent>
     </Dialog>
   );

@@ -12,7 +12,7 @@ import GuessGrid from '@/components/game/GuessGrid';
 import FilterSelector from '@/components/game/FilterSelector';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { fetchCustomTrack } from '@/lib/api';
+import { fetchCustomTrack, saveScore } from '@/lib/api';
 import { isFuzzyTitleMatch } from '@/lib/normalizeTitle';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { MAX_ATTEMPTS, SNIPPET_DURATIONS, MAX_CUSTOM_ROUNDS, CUSTOM_SCORE_POINTS } from '@/config/constants';
@@ -76,11 +76,13 @@ export default function CustomGame() {
       setWon(true);
       setRoundOver(true);
       playFullSong();
+      saveScore({ game_type: 'custom', attempts: newGuesses.length, completed: true });
       if (round >= maxRounds) { setGameOver(true); setShowModal(true); }
     } else if (currentAttempt + 1 >= MAX_ATTEMPTS) {
       setRoundOver(true);
       setWon(false);
       playFullSong();
+      saveScore({ game_type: 'custom', attempts: MAX_ATTEMPTS, completed: false });
       if (round >= maxRounds) { setGameOver(true); setShowModal(true); }
     } else {
       setCurrentAttempt(currentAttempt + 1);
@@ -132,39 +134,41 @@ export default function CustomGame() {
       <div className="min-h-screen flex flex-col bg-white text-dark font-sans">
         <AppHeader />
         <main className="flex-1 flex flex-col items-center justify-center py-8 px-4">
-          <div className="w-full max-w-md mx-auto">
-            <h1 className="text-3xl font-bold text-center mb-2">Custom Game</h1>
-            <p className="text-center text-gray-600 mb-8">Choose your filters and test your music knowledge</p>
+          <div className="w-full max-w-sm mx-auto">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold text-dark" style={{ fontFamily: 'Georgia, Times, serif' }}>Custom Game</h1>
+              <p className="text-sm text-gray-400 mt-1">Pick your filters and test your ears</p>
+            </div>
 
             <div className="w-full mb-6">
               <FilterSelector onFiltersChange={setFilters} initialFilters={filters} />
             </div>
 
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Number of Rounds</label>
+            <div className="mb-8">
+              <label className="block text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Rounds</label>
               <input
                 type="number"
                 min="1"
                 max={MAX_CUSTOM_ROUNDS}
                 value={maxRounds}
                 onChange={(e) => setMaxRounds(Math.min(MAX_CUSTOM_ROUNDS, Math.max(1, parseInt(e.target.value) || 1)))}
-                className="w-full px-4 py-2 border-2 border-gray-300 rounded focus:outline-none focus:border-gray-400 transition-colors"
+                className="w-full h-11 px-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1C1C1E] transition-colors"
               />
-              <p className="text-xs text-gray-500 mt-1">Play between 1–{MAX_CUSTOM_ROUNDS} rounds</p>
+              <p className="text-xs text-gray-400 mt-1.5">1–{MAX_CUSTOM_ROUNDS} rounds</p>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3">
               <Button
                 onClick={loadCustomTrack}
                 disabled={loading}
-                className="flex-1 bg-dark hover:bg-gray-600 text-white font-semibold py-3 rounded transition-colors cursor-pointer"
+                className="w-full h-11 bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white font-bold rounded-full text-sm transition-colors cursor-pointer disabled:opacity-60"
               >
                 {loading ? 'Loading...' : 'Start Game'}
               </Button>
-              <Link href="/" className="flex-1">
-                <Button className="w-full font-semibold py-3 bg-white text-dark border-2 border-gray-300 rounded hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
+              <Link href="/" className="w-full">
+                <button className="w-full h-11 font-semibold text-sm bg-white text-gray-500 border border-gray-200 rounded-full hover:border-gray-400 hover:text-dark transition-colors cursor-pointer">
                   Cancel
-                </Button>
+                </button>
               </Link>
             </div>
           </div>
@@ -195,12 +199,14 @@ export default function CustomGame() {
       <AppHeader />
       <main className="flex-1 flex flex-col items-center justify-start py-8 px-4">
         <div className="w-full max-w-lg mx-auto">
-          <div className="mb-4 text-center">
+          <div className="mb-5 text-center">
             <div className="flex justify-between items-center mb-1">
-              <p className="text-sm font-semibold text-gray-600">Round {round}/{maxRounds}</p>
-              <p className="text-sm font-semibold text-gray-600">Score: {score}</p>
+              <p className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Round {round}/{maxRounds}</p>
+              <p className="text-sm font-semibold text-[#1C1C1E]">Score: {score}</p>
             </div>
-            <p className="text-xs text-gray-500 font-medium">{getFilterDisplay()}</p>
+            {getFilterDisplay() !== 'No filters' && (
+              <p className="text-xs text-gray-400">{getFilterDisplay()}</p>
+            )}
           </div>
 
           <div className="w-full bg-white flex flex-col items-center">
@@ -230,18 +236,18 @@ export default function CustomGame() {
 
             {roundOver && (
               <div className="w-full max-w-md mb-8 text-center">
-                <div className="mb-4">
-                  <p className="text-xl font-bold text-dark mb-2">{won ? '🎉 Correct!' : '😔 Incorrect'}</p>
-                  <p className="text-lg font-semibold text-dark">{track.name}</p>
-                  <p className="text-md text-gray-600">{track.artists.join(', ')}</p>
-                  <p className="text-sm text-gray-500 mt-1">{track.album.name}</p>
+                <div className="mb-5">
+                  <p className="text-lg font-bold text-dark mb-3">{won ? '🎉 Correct!' : '😔 Not quite'}</p>
+                  <p className="text-base font-semibold text-dark">{track.name}</p>
+                  <p className="text-sm text-gray-500 mt-0.5">{track.artists.join(', ')}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{track.album.name}</p>
                 </div>
                 {!gameOver && (
                   <Button
                     onClick={handleNextRound}
-                    className="bg-dark hover:bg-gray-600 text-white font-sans font-semibold px-8 py-3 rounded transition-colors cursor-pointer"
+                    className="bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white font-semibold px-10 h-11 rounded-full transition-colors cursor-pointer"
                   >
-                    Next Round
+                    Next Round →
                   </Button>
                 )}
               </div>
@@ -250,7 +256,7 @@ export default function CustomGame() {
             {gameOver && (
               <Button
                 onClick={() => setShowModal(true)}
-                className="mb-6 bg-dark hover:bg-gray-600 text-white font-sans font-semibold px-8 py-3 rounded transition-colors cursor-pointer"
+                className="mb-6 bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white font-semibold px-10 h-11 rounded-full transition-colors cursor-pointer"
               >
                 View Results
               </Button>
@@ -263,25 +269,25 @@ export default function CustomGame() {
       <Footer />
 
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="max-w-[85vw] sm:max-w-md bg-white border-2 border-gray-300 text-dark font-sans shadow-lg rounded">
+        <DialogContent className="max-w-[85vw] sm:max-w-sm bg-white border border-gray-200 text-dark font-sans shadow-xl rounded-2xl p-6">
           <DialogTitle className="sr-only">Game Complete!</DialogTitle>
           <DialogDescription className="sr-only">Your final score for the custom game</DialogDescription>
-          <div className="text-4xl sm:text-5xl mb-3 text-center">🎉</div>
-          <h2 className="text-xl sm:text-2xl font-bold mb-2 text-center text-dark font-sans">Game Complete!</h2>
-          <p className="text-lg font-semibold text-center text-dark mb-6">
-            Final Score: {score}/{maxRounds * 5}
+          <div className="text-5xl mb-4 text-center">🎉</div>
+          <h2 className="text-xl font-bold mb-1 text-center text-dark" style={{ fontFamily: 'Georgia, Times, serif' }}>Game Complete!</h2>
+          <p className="text-sm text-gray-400 text-center mb-5">
+            Final Score: <span className="font-bold text-dark text-base">{score}</span> / {maxRounds * 5}
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2">
             <Button
               onClick={handlePlayAgain}
-              className="flex-1 text-white bg-dark hover:bg-gray-600 font-sans font-semibold py-3 rounded transition-colors cursor-pointer"
+              className="w-full h-11 text-white bg-[#1C1C1E] hover:bg-[#0A0A0A] font-semibold rounded-full text-sm transition-colors cursor-pointer"
             >
               Play Again
             </Button>
-            <Link href="/" className="flex-1">
-              <Button className="w-full font-sans font-semibold py-3 bg-white text-dark border-2 border-gray-300 rounded hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer">
-                Home
-              </Button>
+            <Link href="/" className="w-full">
+              <button className="w-full h-11 font-semibold text-sm bg-white text-gray-500 border border-gray-200 rounded-full hover:border-gray-400 hover:text-dark transition-colors cursor-pointer">
+                Back to Home
+              </button>
             </Link>
           </div>
         </DialogContent>

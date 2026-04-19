@@ -2,10 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import AppHeader from '@/components/layout/AppHeader';
 import Footer from '@/components/layout/Footer';
-import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 
 export default function JoinLobbyPage() {
   const [name, setName] = useState('');
@@ -24,21 +23,23 @@ export default function JoinLobbyPage() {
   return (
     <div className="flex flex-col min-h-screen bg-white font-sans text-dark">
       <AppHeader />
-      <main className="flex flex-col items-center justify-center grow p-4">
-        <div className="w-full max-w-md flex flex-col items-center space-y-8">
-          <div className="w-24 h-24 mx-auto flex items-center justify-center">
-            <Image src="/Beatdle_Logo.png" alt="Beatdle Logo" width={96} height={96} className="object-contain" />
+      <main className="flex flex-col items-center justify-center grow px-4">
+        <div className="w-full max-w-xs">
+
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold text-dark" style={{ fontFamily: 'Georgia, Times, serif' }}>
+              Join Lobby
+            </h1>
+            <p className="text-sm text-gray-400 mt-1">Enter a code to join a game</p>
           </div>
 
-          <h1 className="text-2xl font-bold text-dark">Join Lobby</h1>
-
-          <div className="w-full flex flex-col space-y-4">
+          <div className="flex flex-col gap-3">
             <input
               type="text"
-              placeholder="Your name"
+              placeholder="Your display name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3.5 rounded border-2 border-gray-300 bg-white text-dark font-sans text-base focus:border-gray-500 focus:outline-none transition-colors placeholder:text-gray-400"
+              className="w-full h-11 border border-gray-200 rounded-xl px-4 text-sm focus:outline-none focus:border-[#1C1C1E] transition-colors placeholder:text-gray-300"
               autoFocus
             />
             <input
@@ -47,17 +48,23 @@ export default function JoinLobbyPage() {
               value={lobbyCode}
               onChange={(e) => setLobbyCode(e.target.value.toUpperCase())}
               onKeyDown={(e) => e.key === 'Enter' && joinLobby()}
-              className="w-full px-4 py-3.5 rounded border-2 border-gray-300 bg-white text-dark font-sans text-base focus:border-gray-500 focus:outline-none transition-colors placeholder:text-gray-400 uppercase tracking-wider"
+              className="w-full h-11 border border-gray-200 rounded-xl px-4 text-sm font-bold tracking-widest text-center focus:outline-none focus:border-[#1C1C1E] transition-colors placeholder:text-gray-300 placeholder:font-normal placeholder:tracking-normal"
               maxLength={5}
             />
-            <Button
+            <button
               onClick={joinLobby}
               disabled={!canJoin}
-              className="w-full h-14 text-lg font-semibold bg-dark hover:bg-gray-600 text-white rounded transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-11 bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white rounded-full text-sm font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Join Lobby
-            </Button>
+            </button>
+            <Link href="/" className="w-full">
+              <button className="w-full h-11 font-semibold text-sm bg-white text-gray-500 border border-gray-200 rounded-full hover:border-gray-400 hover:text-dark transition-colors cursor-pointer">
+                Cancel
+              </button>
+            </Link>
           </div>
+
         </div>
       </main>
       <Footer />
