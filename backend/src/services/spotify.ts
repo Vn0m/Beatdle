@@ -148,11 +148,17 @@ const SEARCH_DECADES = [
   { start: 2020, end: 2026 },
 ];
 
+let _dailyTrackCache: { date: string; track: Awaited<ReturnType<typeof getTrack>> } | null = null;
+
 export async function getDailyTrack(userDate?: string){
     const token = await getSpotifyAccessToken();
     if(!token) throw new Error("Unable to get Spotify access token");
 
     const today = userDate || new Date().toISOString().split('T')[0]!;
+
+    if (_dailyTrackCache && _dailyTrackCache.date === today) {
+        return _dailyTrackCache.track;
+    }
     const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
     const genre = SEARCH_GENRES[seed % SEARCH_GENRES.length]!;
@@ -197,7 +203,9 @@ export async function getDailyTrack(userDate?: string){
         const dailyTrack = popularTracks[index];
 
         addRecentTrack(dailyTrack.id);
-        return getTrack(dailyTrack.id);
+        const track = await getTrack(dailyTrack.id);
+        _dailyTrackCache = { date: today, track };
+        return track;
 
     }catch(err){
         console.error("Error fetching daily track: ", err);
