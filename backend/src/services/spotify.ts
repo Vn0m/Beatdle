@@ -1,7 +1,8 @@
+import { createRequire } from 'module';
+import { query as dbQuery } from '../db.js';
+
 let cachedToken: string | null = null;
 let tokenExpiryTime: number = 0;
-
-import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 
 let spotifyPreviewFinder: ((songName: string, artistName?: string, limit?: number) => Promise<any>) | null = null;
@@ -159,6 +160,17 @@ export async function getDailyTrack(userDate?: string){
     if (_dailyTrackCache && _dailyTrackCache.date === today) {
         return _dailyTrackCache.track;
     }
+
+    // Check DB cache first — survives server restarts
+    try {
+        const result = await dbQuery('SELECT track_data FROM daily_tracks WHERE date = $1', [today]);
+        if (result.rows.length > 0) {
+            const track = result.rows[0].track_data;
+            _dailyTrackCache = { date: today, track };
+            return track;
+        }
+    } catch {}
+
     const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
     const genre = SEARCH_GENRES[seed % SEARCH_GENRES.length]!;
@@ -205,6 +217,12 @@ export async function getDailyTrack(userDate?: string){
         addRecentTrack(dailyTrack.id);
         const track = await getTrack(dailyTrack.id);
         _dailyTrackCache = { date: today, track };
+        try {
+            await dbQuery(
+                'INSERT INTO daily_tracks (date, track_data) VALUES ($1, $2) ON CONFLICT (date) DO NOTHING',
+                [today, JSON.stringify(track)]
+            );
+        } catch {}
         return track;
 
     }catch(err){
