@@ -62,6 +62,7 @@ router.get('/custom-track', async (req, res) => {
   try {
     const genre = req.query.genre as string | undefined;
     const artist = req.query.artist as string | undefined;
+    console.log('[custom-track] raw query:', JSON.stringify(req.query));
     const decadeStart = req.query.decadeStart ? parseInt(req.query.decadeStart as string, 10) : undefined;
     const decadeEnd = req.query.decadeEnd ? parseInt(req.query.decadeEnd as string, 10) : undefined;
 

@@ -389,8 +389,9 @@ async function getArtistTracks(artistName: string, token: string): Promise<any[]
     if (!searchResp.ok) return [];
     const searchData = await searchResp.json();
 
+    const norm = (s: string) => s.trim().toLowerCase();
     const artist = searchData.artists?.items?.find((a: any) =>
-      a.name.toLowerCase() === artistName.toLowerCase()
+      norm(a.name) === norm(artistName)
     ) || searchData.artists?.items?.[0];
     if (!artist) return [];
 
@@ -434,18 +435,20 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
   if (!token) throw new Error("Unable to get Spotify access token");
 
   let queryParts: string[] = [];
-  
-  if (settings?.artist) {
-    queryParts.push(settings.artist);
+
+  const artistInput = settings?.artist?.trim() || undefined;
+
+  if (artistInput) {
+    queryParts.push(artistInput);
   }
-  
+
   if (settings?.decadeStart && settings?.decadeEnd) {
     queryParts.push(`year:${settings.decadeStart}-${settings.decadeEnd}`);
   } else if (settings?.decadeStart) {
     queryParts.push(`year:${settings.decadeStart}-${settings.decadeStart + 9}`);
   }
 
-  if (settings?.genre && !settings?.artist) {
+  if (settings?.genre && !artistInput) {
     queryParts.push(`genre:"${settings.genre.toLowerCase()}"`);
   }
 
@@ -471,15 +474,16 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
 
     const excludedIds = new Set([...recentTrackIds, ...exclude]);
 
-    const filterTrack = (track: any, artistInput: string) => {
-      const input = artistInput.toLowerCase();
-      return track.artists.some((a: any) => a.name.toLowerCase() === input);
+    const norm = (s: string) => s.trim().toLowerCase();
+    const filterTrack = (track: any, artist: string) => {
+      const input = norm(artist);
+      return track.artists.some((a: any) => norm(a.name) === input);
     };
 
     let validTracks: any[] = [];
 
-    if (settings?.artist) {
-      const artistTracks = await getArtistTracks(settings.artist, token);
+    if (artistInput) {
+      const artistTracks = await getArtistTracks(artistInput, token);
 
       const popularTracks: any[] = [];
       const deepCuts: any[] = [];     
@@ -488,7 +492,7 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
       for (const t of [...artistTracks, ...data.tracks.items]) {
         if (!t?.id || seenIds.has(t.id)) continue;
         seenIds.add(t.id);
-        if (!isBaseVersion(t.name) || !filterTrack(t, settings.artist!)) continue;
+        if (!isBaseVersion(t.name) || !filterTrack(t, artistInput)) continue;
         if (t.popularity !== undefined && t.popularity > 0) {
           popularTracks.push(t);
         } else {

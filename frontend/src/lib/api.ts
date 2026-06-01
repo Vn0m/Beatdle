@@ -48,7 +48,8 @@ export async function fetchDailySong(): Promise<SpotifyTrack> {
 export async function fetchCustomTrack(filters: GameFilters): Promise<SpotifyTrack> {
   const params = new URLSearchParams();
   if (filters.genre) params.append('genre', filters.genre);
-  if (filters.artist) params.append('artist', filters.artist);
+  const artist = filters.artist?.trim();
+  if (artist) params.append('artist', artist);
   if (filters.decadeStart) params.append('decadeStart', filters.decadeStart.toString());
   if (filters.decadeEnd) params.append('decadeEnd', filters.decadeEnd.toString());
   
