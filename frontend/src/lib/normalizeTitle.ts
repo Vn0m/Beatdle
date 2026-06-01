@@ -1,7 +1,15 @@
 const DELIMITERS = [' - ', ' (', ' [', ' /'];
 
+function normalize(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/\./g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function extractCore(title: string): string {
-  const cleaned = title.replace(/\s+/g, ' ').trim().toLowerCase();
+  const cleaned = normalize(title);
 
   let earliestSplit = cleaned.length;
   for (const d of DELIMITERS) {
@@ -15,8 +23,8 @@ function extractCore(title: string): string {
 }
 
 export function isFuzzyTitleMatch(a: string, b: string): boolean {
-  const cleanA = a.replace(/\s+/g, ' ').trim().toLowerCase();
-  const cleanB = b.replace(/\s+/g, ' ').trim().toLowerCase();
+  const cleanA = normalize(a);
+  const cleanB = normalize(b);
 
   if (cleanA === cleanB) return true;
 
