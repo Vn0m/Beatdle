@@ -389,7 +389,7 @@ async function getArtistTracks(artistName: string, token: string): Promise<any[]
     if (!searchResp.ok) return [];
     const searchData = await searchResp.json();
 
-    const norm = (s: string) => s.trim().toLowerCase();
+    const norm = (s: string) => s.trim().replace(/\s+/g, ' ').toLowerCase();
     const artist = searchData.artists?.items?.find((a: any) =>
       norm(a.name) === norm(artistName)
     ) || searchData.artists?.items?.[0];
@@ -436,7 +436,7 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
 
   let queryParts: string[] = [];
 
-  const artistInput = settings?.artist?.trim() || undefined;
+  const artistInput = settings?.artist?.trim().replace(/\s+/g, ' ') || undefined;
 
   if (artistInput) {
     queryParts.push(artistInput);
@@ -474,7 +474,7 @@ export async function getCustomTrack(settings?: { genre?: string; artist?: strin
 
     const excludedIds = new Set([...recentTrackIds, ...exclude]);
 
-    const norm = (s: string) => s.trim().toLowerCase();
+    const norm = (s: string) => s.trim().replace(/\s+/g, ' ').toLowerCase();
     const filterTrack = (track: any, artist: string) => {
       const input = norm(artist);
       return track.artists.some((a: any) => norm(a.name) === input);
