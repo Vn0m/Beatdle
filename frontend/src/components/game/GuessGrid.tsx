@@ -22,13 +22,13 @@ export default function GuessGrid({ guesses, maxAttempts }: GuessGridProps) {
             key={i}
             className={`px-4 py-3 rounded-xl flex items-center justify-between text-sm font-medium transition-all duration-200 ${
               guess.correct
-                ? 'bg-[#e8f5e6] border border-[#6aaa64] text-dark'
-                : 'bg-[#fee2e2] border border-red-300 text-dark'
+                ? 'bg-correct-light border border-correct text-dark'
+                : 'bg-wrong-light border border-red-300 text-dark'
             }`}
           >
-            <span className="flex-1 truncate">{guess.guess}</span>
+            <span className="flex-1 min-w-0 truncate">{guess.guess.length > 40 ? guess.guess.slice(0, 40) + '…' : guess.guess}</span>
             {guess.correct
-              ? <CheckCircle2 className="ml-3 w-4 h-4 shrink-0 text-[#6aaa64]" />
+              ? <CheckCircle2 className="ml-3 w-4 h-4 shrink-0 text-correct" />
               : <XCircle className="ml-3 w-4 h-4 shrink-0 text-red-400" />
             }
           </div>

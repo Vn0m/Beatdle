@@ -152,7 +152,7 @@ export default function CustomGame() {
                 max={MAX_CUSTOM_ROUNDS}
                 value={maxRounds}
                 onChange={(e) => setMaxRounds(Math.min(MAX_CUSTOM_ROUNDS, Math.max(1, parseInt(e.target.value) || 1)))}
-                className="w-full h-11 px-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1C1C1E] transition-colors"
+                className="w-full h-11 px-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-primary-500 transition-colors"
               />
               <p className="text-xs text-gray-400 mt-1.5">1–{MAX_CUSTOM_ROUNDS} rounds</p>
             </div>
@@ -161,7 +161,7 @@ export default function CustomGame() {
               <Button
                 onClick={loadCustomTrack}
                 disabled={loading}
-                className="w-full h-11 bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white font-bold rounded-full text-sm transition-colors cursor-pointer disabled:opacity-60"
+                className="w-full h-11 bg-primary-500 hover:bg-primary-600 text-white font-bold rounded-full text-sm transition-colors cursor-pointer disabled:opacity-60"
               >
                 {loading ? 'Loading...' : 'Start Game'}
               </Button>
@@ -202,7 +202,7 @@ export default function CustomGame() {
           <div className="mb-5 text-center">
             <div className="flex justify-between items-center mb-1">
               <p className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Round {round}/{maxRounds}</p>
-              <p className="text-sm font-semibold text-[#1C1C1E]">Score: {score}</p>
+              <p className="text-sm font-semibold text-primary-500">Score: {score}</p>
             </div>
             {getFilterDisplay() !== 'No filters' && (
               <p className="text-xs text-gray-400">{getFilterDisplay()}</p>
@@ -245,7 +245,7 @@ export default function CustomGame() {
                 {!gameOver && (
                   <Button
                     onClick={handleNextRound}
-                    className="bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white font-semibold px-10 h-11 rounded-full transition-colors cursor-pointer"
+                    className="bg-primary-500 hover:bg-primary-600 text-white font-semibold px-10 h-11 rounded-full transition-colors cursor-pointer"
                   >
                     Next Round →
                   </Button>
@@ -256,7 +256,7 @@ export default function CustomGame() {
             {gameOver && (
               <Button
                 onClick={() => setShowModal(true)}
-                className="mb-6 bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white font-semibold px-10 h-11 rounded-full transition-colors cursor-pointer"
+                className="mb-6 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-10 h-11 rounded-full transition-colors cursor-pointer"
               >
                 View Results
               </Button>
@@ -280,7 +280,7 @@ export default function CustomGame() {
           <div className="flex flex-col gap-2">
             <Button
               onClick={handlePlayAgain}
-              className="w-full h-11 text-white bg-[#1C1C1E] hover:bg-[#0A0A0A] font-semibold rounded-full text-sm transition-colors cursor-pointer"
+              className="w-full h-11 text-white bg-primary-500 hover:bg-primary-600 font-semibold rounded-full text-sm transition-colors cursor-pointer"
             >
               Play Again
             </Button>

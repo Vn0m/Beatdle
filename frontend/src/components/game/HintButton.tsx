@@ -21,7 +21,7 @@ export default function HintButton({
     <Button
       onClick={onReveal}
       disabled={isRevealed || disabled}
-      className={`flex-1 font-sans font-medium text-sm transition-all duration-200 cursor-pointer ${
+      className={`flex-1 min-w-0 overflow-hidden font-sans font-medium text-sm transition-all duration-200 cursor-pointer ${
         isRevealed
           ? "bg-gray-100 border-2 border-gray-300 text-dark hover:bg-gray-100 cursor-default"
           : "bg-white border-2 border-primary-500 text-primary-500 hover:bg-primary-50 hover:border-primary-600"

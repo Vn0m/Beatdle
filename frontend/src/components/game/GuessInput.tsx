@@ -50,7 +50,7 @@ export default function GuessInput({ onSelect, disabled = false }: GuessInputPro
     <div className="relative w-full max-w-md">
       <input
         type="text"
-        className="w-full px-4 py-3.5 rounded border-2 border-gray-300 bg-white text-dark font-sans text-base focus:border-gray-500 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-gray-400"
+        className="w-full min-w-0 px-4 py-3.5 rounded border-2 border-gray-300 bg-white text-dark font-sans text-base focus:border-gray-500 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-gray-400"
         placeholder="Type to search for a song..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}

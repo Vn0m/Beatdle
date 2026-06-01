@@ -56,7 +56,7 @@ function NavMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
 
           <div className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
             <Link href="/daily" onClick={onClose} className="flex items-center gap-3 text-dark text-base font-semibold px-3 py-3 rounded-lg hover:bg-gray-50 transition-colors">
-              <Music className="h-4 w-4 text-[#1C1C1E]" /> Daily Challenge
+              <Music className="h-4 w-4 text-primary-500" /> Daily Challenge
             </Link>
             <Link href="/custom" onClick={onClose} className="flex items-center gap-3 text-dark text-base font-semibold px-3 py-3 rounded-lg hover:bg-gray-50 transition-colors">
               <Music className="h-4 w-4 text-gray-400" /> Custom Game
@@ -142,19 +142,19 @@ export default function AppHeader() {
           <DialogDescription className="sr-only">Instructions for playing Beatdle</DialogDescription>
           <div className="space-y-4">
             <div className="flex gap-3 items-start">
-              <Headphones className="h-5 w-5 text-[#1C1C1E] shrink-0 mt-0.5" />
+              <Headphones className="h-5 w-5 text-primary-500 shrink-0 mt-0.5" />
               <p className="text-sm text-gray-600">Listen to the audio snippet</p>
             </div>
             <div className="flex gap-3 items-start">
-              <Clock className="h-5 w-5 text-[#1C1C1E] shrink-0 mt-0.5" />
+              <Clock className="h-5 w-5 text-primary-500 shrink-0 mt-0.5" />
               <p className="text-sm text-gray-600">You get 5 tries — each reveals more audio</p>
             </div>
             <div className="flex gap-3 items-start">
-              <Search className="h-5 w-5 text-[#1C1C1E] shrink-0 mt-0.5" />
+              <Search className="h-5 w-5 text-primary-500 shrink-0 mt-0.5" />
               <p className="text-sm text-gray-600">Type your guess and select from suggestions</p>
             </div>
             <div className="flex gap-3 items-start">
-              <Share2 className="h-5 w-5 text-[#1C1C1E] shrink-0 mt-0.5" />
+              <Share2 className="h-5 w-5 text-primary-500 shrink-0 mt-0.5" />
               <p className="text-sm text-gray-600">Share your results. New song every day!</p>
             </div>
           </div>

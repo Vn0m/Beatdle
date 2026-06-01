@@ -151,7 +151,7 @@ export default function DailyGame() {
     <div className="min-h-screen flex flex-col bg-white text-dark font-sans">
       <AppHeader />
       <main className="flex grow">
-        <div className="flex-1 flex flex-col items-center justify-start py-8 px-4">
+        <div className="flex-1 min-w-0 flex flex-col items-center justify-start py-8 px-4">
           <div className="w-full max-w-lg mx-auto">
             <div className="w-full bg-white flex flex-col items-center">
               <AudioPlayer
@@ -179,7 +179,7 @@ export default function DailyGame() {
                   <div className="mt-6">
                     <button
                       onClick={() => setShowHints(!showHints)}
-                      className="w-full py-2 px-4 text-sm font-medium text-gray-400 hover:text-[#1C1C1E] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                      className="w-full py-2 px-4 text-sm font-medium text-gray-400 hover:text-primary-500 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
                     >
                       <Lightbulb className="w-4 h-4" />
                       {showHints ? 'Hide Hints' : 'Need a hint?'}
@@ -214,7 +214,7 @@ export default function DailyGame() {
               {gameOver && (
                 <Button
                   onClick={() => setShowModal(true)}
-                  className="mb-6 bg-[#1C1C1E] hover:bg-[#0A0A0A] text-white font-semibold px-10 h-11 rounded-full transition-colors cursor-pointer"
+                  className="mb-6 bg-primary-500 hover:bg-primary-600 text-white font-semibold px-10 h-11 rounded-full transition-colors cursor-pointer"
                 >
                   View Results
                 </Button>
